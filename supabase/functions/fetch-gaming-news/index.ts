@@ -17,6 +17,18 @@ interface RSSItem {
   content?: string;
 }
 
+interface NewsAPIArticle {
+  title: string;
+  url: string;
+  description: string;
+  publishedAt: string;
+  urlToImage?: string;
+  source: {
+    name: string;
+  };
+  content?: string;
+}
+
 function generateSlug(title: string): string {
   return title
     .toLowerCase()
@@ -247,6 +259,64 @@ Deno.serve(async (req: Request) => {
         }
       } catch (error) {
         results.errors.push(`Error fetching ${feed.source}: ${error.message}`);
+      }
+    }
+
+    const newsApiKey = Deno.env.get('NEWSAPI_KEY');
+    if (newsApiKey) {
+      try {
+        const newsApiUrl = `https://newsapi.org/v2/everything?q=gaming OR videogames OR esports&language=en&sortBy=publishedAt&pageSize=20&apiKey=${newsApiKey}`;
+        const newsApiResponse = await fetch(newsApiUrl);
+
+        if (newsApiResponse.ok) {
+          const newsApiData = await newsApiResponse.json();
+
+          for (const article of newsApiData.articles || []) {
+            try {
+              if (!article.title || article.title === '[Removed]') continue;
+
+              const slug = generateSlug(article.title);
+              const existingArticle = await supabase
+                .from('news_articles')
+                .select('id')
+                .eq('slug', slug)
+                .maybeSingle();
+
+              if (!existingArticle.data) {
+                const excerpt = truncateText(article.description || '', 200);
+                const content = article.content
+                  ? truncateText(article.content, 1500)
+                  : truncateText(article.description || '', 1500);
+
+                const { error: articleError } = await supabase
+                  .from('news_articles')
+                  .insert({
+                    title: article.title,
+                    slug: slug,
+                    excerpt: excerpt || `Latest gaming news from ${article.source.name}`,
+                    content: content || article.description || `Read more about ${article.title}. This story is developing.`,
+                    featured_image: article.urlToImage || 'https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg',
+                    category: 'Gaming News',
+                    author: article.source.name,
+                    published_at: new Date(article.publishedAt).toISOString(),
+                    view_count: 0,
+                    is_featured: results.news_articles < 3,
+                  });
+
+                if (articleError) {
+                  results.errors.push(`NewsAPI article error for ${article.title}: ${articleError.message}`);
+                } else {
+                  results.news_articles++;
+                  console.log(`Added NewsAPI article: ${article.title}`);
+                }
+              }
+            } catch (error) {
+              results.errors.push(`Error processing NewsAPI article ${article.title}: ${error.message}`);
+            }
+          }
+        }
+      } catch (error) {
+        results.errors.push(`NewsAPI error: ${error.message}`);
       }
     }
 
