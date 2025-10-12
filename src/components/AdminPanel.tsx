@@ -35,6 +35,35 @@ export default function AdminPanel() {
     }
   };
 
+  const updateGameImages = async () => {
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update-game-images`;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to update game images');
+      }
+
+      setResult(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-slate-950 rounded-xl shadow-lg p-8">
@@ -74,6 +103,35 @@ export default function AdminPanel() {
           </button>
         </div>
 
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6 mb-6">
+          <h2 className="text-xl font-bold text-white mb-3">Update Game Images from IGDB</h2>
+          <p className="text-gray-700 mb-4">
+            Replace placeholder images with real game screenshots, cover art, and artwork from the IGDB database.
+          </p>
+
+          <div className="bg-slate-950 rounded-lg p-4 mb-4 border border-green-200">
+            <h3 className="font-semibold text-white mb-2">What will be updated:</h3>
+            <ul className="text-sm text-gray-700 space-y-1">
+              <li>• <strong>Game Reviews</strong> - Official cover art for each game</li>
+              <li>• <strong>News Articles</strong> - Game screenshots and artwork</li>
+              <li>• <strong>Gallery</strong> - High-quality game screenshots</li>
+              <li>• <strong>Videos</strong> - Game-specific thumbnails</li>
+            </ul>
+            <p className="text-xs text-gray-600 mt-3">
+              This uses the IGDB API (powered by Twitch) to fetch official game images. Requires IGDB API credentials.
+            </p>
+          </div>
+
+          <button
+            onClick={updateGameImages}
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+          >
+            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+            <span>{loading ? 'Updating Images...' : 'Update Game Images'}</span>
+          </button>
+        </div>
+
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 flex items-start space-x-3">
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
@@ -102,25 +160,52 @@ export default function AdminPanel() {
             </div>
 
             <div className="bg-slate-950 rounded-lg p-4 border border-green-200">
-              <h4 className="font-semibold text-white mb-3">Content Added:</h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3">
-                  <div className="text-2xl font-bold text-blue-900">{result.results.news_articles}</div>
-                  <div className="text-xs text-blue-700 font-medium">News Articles</div>
+              <h4 className="font-semibold text-white mb-3">
+                {result.results.news_articles !== undefined ? 'Content Added:' : 'Images Updated:'}
+              </h4>
+              {result.results.news_articles !== undefined ? (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-blue-900">{result.results.news_articles}</div>
+                    <div className="text-xs text-blue-700 font-medium">News Articles</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-purple-900">{result.results.game_reviews}</div>
+                    <div className="text-xs text-purple-700 font-medium">Game Reviews</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-green-900">{result.results.videos}</div>
+                    <div className="text-xs text-green-700 font-medium">Videos</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-cyan-50 to-orange-100 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-cyan-900">{result.results.gallery_images}</div>
+                    <div className="text-xs text-cyan-700 font-medium">Gallery Images</div>
+                  </div>
                 </div>
-                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-3">
-                  <div className="text-2xl font-bold text-purple-900">{result.results.game_reviews}</div>
-                  <div className="text-xs text-purple-700 font-medium">Game Reviews</div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-blue-900">{result.results.reviews_updated}</div>
+                    <div className="text-xs text-blue-700 font-medium">Reviews</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-purple-900">{result.results.news_updated}</div>
+                    <div className="text-xs text-purple-700 font-medium">News</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-green-900">{result.results.gallery_updated}</div>
+                    <div className="text-xs text-green-700 font-medium">Gallery</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-cyan-50 to-orange-100 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-cyan-900">{result.results.videos_updated}</div>
+                    <div className="text-xs text-cyan-700 font-medium">Videos</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-pink-900">{result.results.blogs_updated}</div>
+                    <div className="text-xs text-pink-700 font-medium">Blogs</div>
+                  </div>
                 </div>
-                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3">
-                  <div className="text-2xl font-bold text-green-900">{result.results.videos}</div>
-                  <div className="text-xs text-green-700 font-medium">Videos</div>
-                </div>
-                <div className="bg-gradient-to-br from-cyan-50 to-orange-100 rounded-lg p-3">
-                  <div className="text-2xl font-bold text-cyan-900">{result.results.gallery_images}</div>
-                  <div className="text-xs text-cyan-700 font-medium">Gallery Images</div>
-                </div>
-              </div>
+              )}
 
               {result.results.errors && result.results.errors.length > 0 && (
                 <div className="mt-4 p-3 bg-yellow-50 rounded border border-yellow-200">
