@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { RefreshCw, AlertCircle, CheckCircle } from 'lucide-react';
+import { RefreshCw, AlertCircle, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { NewsArticleForm, GameReviewForm, VideoForm, GalleryImageForm, BlogPostForm } from './ContentForms';
 
 export default function AdminPanel() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   const fetchGamingNews = async () => {
     setLoading(true);
@@ -243,6 +245,123 @@ export default function AdminPanel() {
             <p>
               <strong>No Rate Limits:</strong> RSS feeds are free and unlimited. You can fetch news as often as you like!
             </p>
+          </div>
+        </div>
+
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold text-white mb-4">Add Original Content</h2>
+          <p className="text-gray-600 mb-6">Create and publish your own content across all sections</p>
+
+          <div className="space-y-4">
+            <div className="bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
+              <button
+                onClick={() => setExpandedSection(expandedSection === 'news' ? null : 'news')}
+                className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-800 transition-colors"
+              >
+                <div>
+                  <h3 className="text-lg font-bold text-white">News Articles</h3>
+                  <p className="text-sm text-gray-400">Add breaking gaming news and updates</p>
+                </div>
+                {expandedSection === 'news' ? (
+                  <ChevronUp className="w-5 h-5 text-cyan-500" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                )}
+              </button>
+              {expandedSection === 'news' && (
+                <div className="px-6 py-4 border-t border-slate-700">
+                  <NewsArticleForm />
+                </div>
+              )}
+            </div>
+
+            <div className="bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
+              <button
+                onClick={() => setExpandedSection(expandedSection === 'reviews' ? null : 'reviews')}
+                className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-800 transition-colors"
+              >
+                <div>
+                  <h3 className="text-lg font-bold text-white">Game Reviews</h3>
+                  <p className="text-sm text-gray-400">Write detailed game reviews with ratings</p>
+                </div>
+                {expandedSection === 'reviews' ? (
+                  <ChevronUp className="w-5 h-5 text-cyan-500" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                )}
+              </button>
+              {expandedSection === 'reviews' && (
+                <div className="px-6 py-4 border-t border-slate-700">
+                  <GameReviewForm />
+                </div>
+              )}
+            </div>
+
+            <div className="bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
+              <button
+                onClick={() => setExpandedSection(expandedSection === 'videos' ? null : 'videos')}
+                className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-800 transition-colors"
+              >
+                <div>
+                  <h3 className="text-lg font-bold text-white">Videos</h3>
+                  <p className="text-sm text-gray-400">Add video content and streams</p>
+                </div>
+                {expandedSection === 'videos' ? (
+                  <ChevronUp className="w-5 h-5 text-cyan-500" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                )}
+              </button>
+              {expandedSection === 'videos' && (
+                <div className="px-6 py-4 border-t border-slate-700">
+                  <VideoForm />
+                </div>
+              )}
+            </div>
+
+            <div className="bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
+              <button
+                onClick={() => setExpandedSection(expandedSection === 'gallery' ? null : 'gallery')}
+                className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-800 transition-colors"
+              >
+                <div>
+                  <h3 className="text-lg font-bold text-white">Gallery Images</h3>
+                  <p className="text-sm text-gray-400">Upload gaming screenshots and artwork</p>
+                </div>
+                {expandedSection === 'gallery' ? (
+                  <ChevronUp className="w-5 h-5 text-cyan-500" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                )}
+              </button>
+              {expandedSection === 'gallery' && (
+                <div className="px-6 py-4 border-t border-slate-700">
+                  <GalleryImageForm />
+                </div>
+              )}
+            </div>
+
+            <div className="bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
+              <button
+                onClick={() => setExpandedSection(expandedSection === 'blog' ? null : 'blog')}
+                className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-800 transition-colors"
+              >
+                <div>
+                  <h3 className="text-lg font-bold text-white">Blog Posts & Vlogs</h3>
+                  <p className="text-sm text-gray-400">Create blog posts and video blogs</p>
+                </div>
+                {expandedSection === 'blog' ? (
+                  <ChevronUp className="w-5 h-5 text-cyan-500" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                )}
+              </button>
+              {expandedSection === 'blog' && (
+                <div className="px-6 py-4 border-t border-slate-700">
+                  <BlogPostForm />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
