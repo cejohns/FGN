@@ -66,6 +66,36 @@ export default function AdminPanel() {
     }
   };
 
+  const fetchTwitchVideos = async () => {
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-twitch-videos`;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch Twitch videos');
+      }
+
+      setResult(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-slate-950 rounded-xl shadow-lg p-8">
@@ -102,6 +132,34 @@ export default function AdminPanel() {
           >
             <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
             <span>{loading ? 'Fetching Content...' : 'Fetch Latest Gaming News'}</span>
+          </button>
+        </div>
+
+        <div className="bg-gradient-to-r from-purple-50 to-violet-50 border border-purple-200 rounded-lg p-6 mb-6">
+          <h2 className="text-xl font-bold text-white mb-3">Fetch Twitch Gaming Videos</h2>
+          <p className="text-gray-700 mb-4">
+            Automatically fetch popular gaming clips and videos from Twitch for top games.
+          </p>
+
+          <div className="bg-slate-950 rounded-lg p-4 mb-4 border border-purple-200">
+            <h3 className="font-semibold text-white mb-2">What will be fetched:</h3>
+            <ul className="text-sm text-gray-700 space-y-1">
+              <li>• <strong>Gaming Clips</strong> - Popular clips from top games</li>
+              <li>• <strong>Gameplay Videos</strong> - Full gameplay videos and VODs</li>
+              <li>• <strong>Trending Content</strong> - Videos from the most viewed games</li>
+            </ul>
+            <p className="text-xs text-gray-600 mt-3">
+              Uses the Twitch API to fetch the latest gaming video content automatically.
+            </p>
+          </div>
+
+          <button
+            onClick={fetchTwitchVideos}
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white font-bold py-3 px-6 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+          >
+            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+            <span>{loading ? 'Fetching Videos...' : 'Fetch Twitch Videos'}</span>
           </button>
         </div>
 
@@ -163,9 +221,20 @@ export default function AdminPanel() {
 
             <div className="bg-slate-950 rounded-lg p-4 border border-green-200">
               <h4 className="font-semibold text-white mb-3">
-                {result.results.news_articles !== undefined ? 'Content Added:' : 'Images Updated:'}
+                {result.clips_added !== undefined ? 'Videos Fetched:' : result.results.news_articles !== undefined ? 'Content Added:' : 'Images Updated:'}
               </h4>
-              {result.results.news_articles !== undefined ? (
+              {result.clips_added !== undefined ? (
+                <div className="grid grid-cols-2 gap-4 text-center">
+                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-purple-900">{result.clips_added}</div>
+                    <div className="text-xs text-purple-700 font-medium">Gaming Clips</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-violet-50 to-violet-100 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-violet-900">{result.videos_added}</div>
+                    <div className="text-xs text-violet-700 font-medium">Gameplay Videos</div>
+                  </div>
+                </div>
+              ) : result.results.news_articles !== undefined ? (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                   <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3">
                     <div className="text-2xl font-bold text-blue-900">{result.results.news_articles}</div>
@@ -209,7 +278,7 @@ export default function AdminPanel() {
                 </div>
               )}
 
-              {result.results.errors && result.results.errors.length > 0 && (
+              {result.results?.errors && result.results.errors.length > 0 && (
                 <div className="mt-4 p-3 bg-yellow-50 rounded border border-yellow-200">
                   <p className="text-sm font-semibold text-yellow-900 mb-2">Warnings:</p>
                   <ul className="text-xs text-yellow-800 space-y-1">
@@ -220,9 +289,22 @@ export default function AdminPanel() {
                 </div>
               )}
 
-              <p className="text-xs text-gray-500 mt-4 text-center">
-                Updated at: {new Date(result.timestamp).toLocaleString()}
-              </p>
+              {result.errors && result.errors.length > 0 && (
+                <div className="mt-4 p-3 bg-yellow-50 rounded border border-yellow-200">
+                  <p className="text-sm font-semibold text-yellow-900 mb-2">Warnings:</p>
+                  <ul className="text-xs text-yellow-800 space-y-1">
+                    {result.errors.slice(0, 5).map((err: string, idx: number) => (
+                      <li key={idx}>• {err}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {result.timestamp && (
+                <p className="text-xs text-gray-500 mt-4 text-center">
+                  Updated at: {new Date(result.timestamp).toLocaleString()}
+                </p>
+              )}
             </div>
           </div>
         )}
