@@ -61,6 +61,18 @@ function getDefaultImage(source: string): string {
     'Eurogamer': 'https://images.pexels.com/photos/3945683/pexels-photo-3945683.jpeg',
     'Destructoid': 'https://images.pexels.com/photos/1174746/pexels-photo-1174746.jpeg',
     'Giant Bomb': 'https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg',
+    'Rock Paper Shotgun': 'https://images.pexels.com/photos/2923034/pexels-photo-2923034.jpeg',
+    'GamesRadar': 'https://images.pexels.com/photos/3945683/pexels-photo-3945683.jpeg',
+    'VideoGamer': 'https://images.pexels.com/photos/7915286/pexels-photo-7915286.jpeg',
+    'VG247': 'https://images.pexels.com/photos/371924/pexels-photo-371924.jpeg',
+    'GamesIndustry.biz': 'https://images.pexels.com/photos/1174746/pexels-photo-1174746.jpeg',
+    'TheGamer': 'https://images.pexels.com/photos/4009599/pexels-photo-4009599.jpeg',
+    'Dexerto': 'https://images.pexels.com/photos/3945683/pexels-photo-3945683.jpeg',
+    'Dot Esports': 'https://images.pexels.com/photos/7915286/pexels-photo-7915286.jpeg',
+    'PCGamesN': 'https://images.pexels.com/photos/2923034/pexels-photo-2923034.jpeg',
+    'Game Informer': 'https://images.pexels.com/photos/371924/pexels-photo-371924.jpeg',
+    'Shacknews': 'https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg',
+    'TechRadar Gaming': 'https://images.pexels.com/photos/3945683/pexels-photo-3945683.jpeg',
   };
   return images[source] || 'https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg';
 }
@@ -172,6 +184,18 @@ Deno.serve(async (req: Request) => {
       { url: 'https://www.eurogamer.net/?format=rss', source: 'Eurogamer', category: 'Eurogamer' },
       { url: 'https://www.destructoid.com/feed/', source: 'Destructoid', category: 'Destructoid' },
       { url: 'https://www.giantbomb.com/feeds/news/', source: 'Giant Bomb', category: 'Giant Bomb' },
+      { url: 'https://www.rockpapershotgun.com/feed', source: 'Rock Paper Shotgun', category: 'PC Gaming' },
+      { url: 'https://www.gamesradar.com/feeds/all/', source: 'GamesRadar', category: 'Gaming News' },
+      { url: 'https://www.videogamer.com/feed/', source: 'VideoGamer', category: 'Gaming News' },
+      { url: 'https://www.vg247.com/feed', source: 'VG247', category: 'Gaming News' },
+      { url: 'https://www.gamesindustry.biz/feed', source: 'GamesIndustry.biz', category: 'Industry News' },
+      { url: 'https://www.thegamer.com/feed/', source: 'TheGamer', category: 'Gaming News' },
+      { url: 'https://www.dexerto.com/feed/', source: 'Dexerto', category: 'Esports' },
+      { url: 'https://dotesports.com/feed', source: 'Dot Esports', category: 'Esports' },
+      { url: 'https://www.pcgamesn.com/feed', source: 'PCGamesN', category: 'PC Gaming' },
+      { url: 'https://www.gameinformer.com/feeds/thefeed.aspx', source: 'Game Informer', category: 'Gaming News' },
+      { url: 'https://www.shacknews.com/feed/rss', source: 'Shacknews', category: 'Gaming News' },
+      { url: 'https://www.techradar.com/rss/gaming/news', source: 'TechRadar Gaming', category: 'Gaming News' },
     ];
 
     console.log(`Starting to process ${rssFeeds.length} RSS feeds`);
