@@ -7,6 +7,7 @@ export default function AdminPanel() {
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [aiTopic, setAiTopic] = useState('');
 
   const fetchGamingNews = async () => {
     setLoading(true);
@@ -149,6 +150,42 @@ export default function AdminPanel() {
       }
 
       setResult(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateAIContent = async (type: 'news' | 'review' | 'blog' | 'video' | 'gallery', count: number = 1) => {
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-ai-content`;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type,
+          topic: aiTopic || undefined,
+          count,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate AI content');
+      }
+
+      setResult(data);
+      setAiTopic('');
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -469,7 +506,87 @@ export default function AdminPanel() {
         </div>
 
         <div className="mt-8">
-          <h2 className="text-2xl font-bold text-white mb-4">Add Original Content</h2>
+          <h2 className="text-2xl font-bold text-white mb-4">Generate AI Content</h2>
+          <p className="text-gray-600 mb-6">Use AI to automatically create unique gaming content</p>
+
+          <div className="bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200 rounded-lg p-6 mb-8">
+            <h3 className="text-lg font-bold text-white mb-3">AI Content Generator</h3>
+            <p className="text-gray-700 mb-4 text-sm">
+              Generate original gaming content using AI. Optionally specify a topic or leave blank for random content.
+            </p>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-300 mb-2">Topic (Optional)</label>
+              <input
+                type="text"
+                value={aiTopic}
+                onChange={(e) => setAiTopic(e.target.value)}
+                placeholder="e.g., Elden Ring, Call of Duty, Gaming PCs..."
+                className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-violet-500"
+                disabled={loading}
+              />
+              <p className="text-xs text-gray-500 mt-1">Leave blank for AI to choose a random gaming topic</p>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <button
+                onClick={() => generateAIContent('news', 3)}
+                disabled={loading}
+                className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                Generate 3 News
+              </button>
+              <button
+                onClick={() => generateAIContent('review', 2)}
+                disabled={loading}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 px-4 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                Generate 2 Reviews
+              </button>
+              <button
+                onClick={() => generateAIContent('blog', 3)}
+                disabled={loading}
+                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-3 px-4 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                Generate 3 Blogs
+              </button>
+              <button
+                onClick={() => generateAIContent('video', 3)}
+                disabled={loading}
+                className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-semibold py-3 px-4 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                Generate 3 Videos
+              </button>
+              <button
+                onClick={() => generateAIContent('gallery', 3)}
+                disabled={loading}
+                className="bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white font-semibold py-3 px-4 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                Generate 3 Gallery
+              </button>
+              <button
+                onClick={() => {
+                  generateAIContent('news', 2);
+                  setTimeout(() => generateAIContent('review', 1), 3000);
+                  setTimeout(() => generateAIContent('blog', 2), 6000);
+                }}
+                disabled={loading}
+                className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-semibold py-3 px-4 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                Generate Mixed
+              </button>
+            </div>
+
+            <div className="mt-4 p-3 bg-slate-950 rounded border border-violet-200">
+              <p className="text-xs text-gray-400">
+                <strong>Note:</strong> AI content generation requires an OpenRouter API key. Content is unique and original but should be reviewed before publishing.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold text-white mb-4">Add Manual Content</h2>
           <p className="text-gray-600 mb-6">Create and publish your own content across all sections</p>
 
           <div className="space-y-4">
