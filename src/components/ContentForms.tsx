@@ -926,3 +926,212 @@ export function BlogPostForm() {
     </form>
   );
 }
+
+export function GuideForm() {
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    title: '',
+    excerpt: '',
+    content: '',
+    featured_image: '',
+    category: 'Gaming Tips',
+    difficulty: 'Beginner',
+    tags: '',
+    author: 'FireStar Guides',
+    estimated_time: '5 min',
+    is_featured: false,
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const slug = generateSlug(formData.title);
+      const tagsArray = formData.tags
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0);
+
+      const { error: insertError } = await supabase
+        .from('guides')
+        .insert({
+          ...formData,
+          slug,
+          tags: tagsArray,
+          published_at: new Date().toISOString(),
+        });
+
+      if (insertError) throw insertError;
+
+      setResult('Guide added successfully!');
+      setFormData({
+        title: '',
+        excerpt: '',
+        content: '',
+        featured_image: '',
+        category: 'Gaming Tips',
+        difficulty: 'Beginner',
+        tags: '',
+        author: 'FireStar Guides',
+        estimated_time: '5 min',
+        is_featured: false,
+      });
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-2">Title</label>
+        <input
+          type="text"
+          required
+          value={formData.title}
+          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+          className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-2">Excerpt</label>
+        <textarea
+          required
+          value={formData.excerpt}
+          onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+          rows={2}
+          className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-2">Content</label>
+        <textarea
+          required
+          value={formData.content}
+          onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+          rows={8}
+          className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-2">Featured Image URL</label>
+        <input
+          type="url"
+          required
+          value={formData.featured_image}
+          onChange={(e) => setFormData({ ...formData, featured_image: e.target.value })}
+          placeholder="https://images.pexels.com/..."
+          className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Category</label>
+          <select
+            value={formData.category}
+            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+            className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500"
+          >
+            <option value="Gaming Tips">Gaming Tips</option>
+            <option value="Game Development">Game Development</option>
+            <option value="Technology">Technology</option>
+            <option value="Hardware">Hardware</option>
+            <option value="Software">Software</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Difficulty</label>
+          <select
+            value={formData.difficulty}
+            onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
+            className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500"
+          >
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Estimated Time</label>
+          <input
+            type="text"
+            value={formData.estimated_time}
+            onChange={(e) => setFormData({ ...formData, estimated_time: e.target.value })}
+            placeholder="5 min"
+            className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-2">Tags (comma-separated)</label>
+        <input
+          type="text"
+          value={formData.tags}
+          onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+          placeholder="fps, tips, beginner"
+          className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-2">Author</label>
+        <input
+          type="text"
+          value={formData.author}
+          onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+          className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500"
+        />
+      </div>
+
+      <div className="flex items-center">
+        <input
+          type="checkbox"
+          id="guide-featured"
+          checked={formData.is_featured}
+          onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
+          className="w-4 h-4 text-cyan-600 border-slate-700 rounded focus:ring-cyan-500"
+        />
+        <label htmlFor="guide-featured" className="ml-2 text-sm text-gray-300">
+          Feature this guide
+        </label>
+      </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start space-x-2">
+          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-red-700">{error}</p>
+        </div>
+      )}
+
+      {result && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-start space-x-2">
+          <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-green-700">{result}</p>
+        </div>
+      )}
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+      >
+        <Plus className="w-5 h-5" />
+        <span>{loading ? 'Adding...' : 'Add Guide'}</span>
+      </button>
+    </form>
+  );
+}

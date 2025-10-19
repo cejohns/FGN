@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { RefreshCw, AlertCircle, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
-import { NewsArticleForm, GameReviewForm, VideoForm, GalleryImageForm, BlogPostForm } from './ContentForms';
+import { NewsArticleForm, GameReviewForm, VideoForm, GalleryImageForm, BlogPostForm, GuideForm } from './ContentForms';
 
 export default function AdminPanel() {
   const [loading, setLoading] = useState(false);
@@ -696,6 +696,28 @@ export default function AdminPanel() {
               {expandedSection === 'blog' && (
                 <div className="px-6 py-4 border-t border-slate-700">
                   <BlogPostForm />
+                </div>
+              )}
+            </div>
+
+            <div className="bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
+              <button
+                onClick={() => setExpandedSection(expandedSection === 'guides' ? null : 'guides')}
+                className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-800 transition-colors"
+              >
+                <div>
+                  <h3 className="text-lg font-bold text-white">Guides & Tutorials</h3>
+                  <p className="text-sm text-gray-400">Create gaming tips, game dev guides, and tech tutorials</p>
+                </div>
+                {expandedSection === 'guides' ? (
+                  <ChevronUp className="w-5 h-5 text-cyan-500" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                )}
+              </button>
+              {expandedSection === 'guides' && (
+                <div className="px-6 py-4 border-t border-slate-700">
+                  <GuideForm />
                 </div>
               )}
             </div>

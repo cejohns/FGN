@@ -16,6 +16,7 @@ export default function Header({ currentSection, onNavigate }: HeaderProps) {
     { id: 'videos', label: 'Videos' },
     { id: 'gallery', label: 'Gallery' },
     { id: 'blog', label: 'Blog' },
+    { id: 'guides', label: 'Guides' },
   ];
 
   return (

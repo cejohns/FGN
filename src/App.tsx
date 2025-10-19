@@ -7,6 +7,7 @@ import ReviewsPage from './components/ReviewsPage';
 import VideosPage from './components/VideosPage';
 import GalleryPage from './components/GalleryPage';
 import BlogPage from './components/BlogPage';
+import GuidesPage from './components/GuidesPage';
 import AdminPanel from './components/AdminPanel';
 import AdminLogin from './components/AdminLogin';
 
@@ -122,6 +123,7 @@ function App() {
             {currentSection === 'videos' && <VideosPage selectedVideoId={selectedItemId} onBack={handleBack} />}
             {currentSection === 'gallery' && <GalleryPage />}
             {currentSection === 'blog' && <BlogPage selectedPostId={selectedItemId} onBack={handleBack} />}
+            {currentSection === 'guides' && <GuidesPage />}
           </>
         )}
       </main>
