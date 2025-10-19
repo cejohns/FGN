@@ -13,10 +13,10 @@ export default function Header({ currentSection, onNavigate }: HeaderProps) {
     { id: 'home', label: 'Home' },
     { id: 'news', label: 'News' },
     { id: 'reviews', label: 'Reviews' },
+    { id: 'guides', label: 'Guides' },
+    { id: 'blog', label: 'Blog' },
     { id: 'videos', label: 'Videos' },
     { id: 'gallery', label: 'Gallery' },
-    { id: 'blog', label: 'Blog' },
-    { id: 'guides', label: 'Guides' },
   ];
 
   return (
