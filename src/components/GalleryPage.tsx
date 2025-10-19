@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { supabase, GalleryImage } from '../lib/supabase';
-import { X, Eye, Camera } from 'lucide-react';
+import { X, Eye, Camera, Filter } from 'lucide-react';
 
 export default function GalleryPage() {
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
   useEffect(() => {
     fetchAllImages();
@@ -52,6 +53,12 @@ export default function GalleryPage() {
     );
   }
 
+  const categories = ['All', 'Gaming', 'Game Development', 'Technology', 'Screenshots', 'Concept Art', 'Cosplay', 'Hardware', 'Events', 'Fan Art'];
+
+  const filteredImages = selectedCategory === 'All'
+    ? images
+    : images.filter(image => image.category === selectedCategory);
+
   return (
     <div>
       <div className="mb-8">
@@ -59,13 +66,32 @@ export default function GalleryPage() {
         <p className="text-gray-600">Screenshots, concept art, cosplay, and more</p>
       </div>
 
-      {images.length === 0 ? (
+      <div className="mb-6 flex items-center space-x-4 overflow-x-auto pb-2">
+        <Filter className="w-5 h-5 text-gray-400 flex-shrink-0" />
+        <div className="flex space-x-2">
+          {categories.map(category => (
+            <button
+              key={category}
+              onClick={() => setSelectedCategory(category)}
+              className={`px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap ${
+                selectedCategory === category
+                  ? 'bg-cyan-600 text-white'
+                  : 'bg-slate-800 text-gray-400 hover:bg-slate-700'
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {filteredImages.length === 0 ? (
         <div className="text-center py-16 bg-slate-950 rounded-xl shadow-lg">
-          <p className="text-gray-500 text-lg">No images available yet.</p>
+          <p className="text-gray-500 text-lg">No images available in this category.</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {images.map((image) => (
+          {filteredImages.map((image) => (
             <button
               key={image.id}
               onClick={() => openLightbox(image)}

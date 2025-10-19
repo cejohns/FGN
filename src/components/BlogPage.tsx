@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase, BlogPost } from '../lib/supabase';
-import { ArrowLeft, Clock, Eye, Video, BookOpen } from 'lucide-react';
+import { ArrowLeft, Clock, Eye, Video, BookOpen, Filter } from 'lucide-react';
 
 interface BlogPageProps {
   selectedPostId?: string;
@@ -12,6 +12,7 @@ export default function BlogPage({ selectedPostId, onBack }: BlogPageProps) {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'blog' | 'vlog'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
   useEffect(() => {
     if (selectedPostId) {
@@ -158,6 +159,12 @@ export default function BlogPage({ selectedPostId, onBack }: BlogPageProps) {
     );
   }
 
+  const categories = ['All', 'Gaming', 'Game Development', 'Technology', 'Reviews', 'Tutorials', 'Opinion', 'News', 'Hardware', 'Software'];
+
+  const filteredPosts = selectedCategory === 'All'
+    ? posts
+    : posts.filter(post => post.category === selectedCategory);
+
   return (
     <div>
       <div className="mb-8">
@@ -200,15 +207,34 @@ export default function BlogPage({ selectedPostId, onBack }: BlogPageProps) {
         </div>
       </div>
 
-      {posts.length === 0 ? (
+      <div className="mb-6 flex items-center space-x-4 overflow-x-auto pb-2">
+        <Filter className="w-5 h-5 text-gray-400 flex-shrink-0" />
+        <div className="flex space-x-2">
+          {categories.map(category => (
+            <button
+              key={category}
+              onClick={() => setSelectedCategory(category)}
+              className={`px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap ${
+                selectedCategory === category
+                  ? 'bg-cyan-600 text-white'
+                  : 'bg-slate-800 text-gray-400 hover:bg-slate-700'
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {filteredPosts.length === 0 ? (
         <div className="text-center py-16 bg-slate-950 rounded-xl shadow-lg">
           <p className="text-gray-500 text-lg">
-            No {filter === 'all' ? 'posts' : filter === 'blog' ? 'blog posts' : 'vlogs'} available yet.
+            No posts available in this category.
           </p>
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {posts.map((post) => (
+          {filteredPosts.map((post) => (
             <button
               key={post.id}
               onClick={() => fetchPostById(post.id)}

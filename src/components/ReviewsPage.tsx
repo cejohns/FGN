@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase, GameReview } from '../lib/supabase';
-import { Star, ArrowLeft, Calendar } from 'lucide-react';
+import { Star, ArrowLeft, Calendar, Filter } from 'lucide-react';
 
 interface ReviewsPageProps {
   selectedReviewId?: string;
@@ -11,6 +11,7 @@ export default function ReviewsPage({ selectedReviewId, onBack }: ReviewsPagePro
   const [reviews, setReviews] = useState<GameReview[]>([]);
   const [selectedReview, setSelectedReview] = useState<GameReview | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedGenre, setSelectedGenre] = useState<string>('All');
 
   useEffect(() => {
     if (selectedReviewId) {
@@ -158,6 +159,12 @@ export default function ReviewsPage({ selectedReviewId, onBack }: ReviewsPagePro
     );
   }
 
+  const genres = ['All', 'Action', 'RPG', 'Adventure', 'Strategy', 'Simulation', 'Sports', 'Racing', 'Shooter', 'Puzzle', 'Horror', 'Fighting'];
+
+  const filteredReviews = selectedGenre === 'All'
+    ? reviews
+    : reviews.filter(review => review.genre.toLowerCase().includes(selectedGenre.toLowerCase()));
+
   return (
     <div>
       <div className="mb-8">
@@ -165,13 +172,32 @@ export default function ReviewsPage({ selectedReviewId, onBack }: ReviewsPagePro
         <p className="text-gray-600">Expert reviews and ratings for the latest games</p>
       </div>
 
-      {reviews.length === 0 ? (
+      <div className="mb-6 flex items-center space-x-4 overflow-x-auto pb-2">
+        <Filter className="w-5 h-5 text-gray-400 flex-shrink-0" />
+        <div className="flex space-x-2">
+          {genres.map(genre => (
+            <button
+              key={genre}
+              onClick={() => setSelectedGenre(genre)}
+              className={`px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap ${
+                selectedGenre === genre
+                  ? 'bg-cyan-600 text-white'
+                  : 'bg-slate-800 text-gray-400 hover:bg-slate-700'
+              }`}
+            >
+              {genre}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {filteredReviews.length === 0 ? (
         <div className="text-center py-16 bg-slate-950 rounded-xl shadow-lg">
-          <p className="text-gray-500 text-lg">No reviews available yet.</p>
+          <p className="text-gray-500 text-lg">No reviews available in this genre.</p>
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {reviews.map((review) => (
+          {filteredReviews.map((review) => (
             <button
               key={review.id}
               onClick={() => fetchReviewById(review.id)}

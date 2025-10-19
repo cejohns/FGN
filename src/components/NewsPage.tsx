@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase, NewsArticle } from '../lib/supabase';
-import { Clock, Eye, ArrowLeft } from 'lucide-react';
+import { Clock, Eye, ArrowLeft, Filter } from 'lucide-react';
 
 interface NewsPageProps {
   selectedArticleId?: string;
@@ -11,6 +11,7 @@ export default function NewsPage({ selectedArticleId, onBack }: NewsPageProps) {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
   useEffect(() => {
     if (selectedArticleId) {
@@ -130,6 +131,12 @@ export default function NewsPage({ selectedArticleId, onBack }: NewsPageProps) {
     );
   }
 
+  const categories = ['All', 'Gaming', 'Game Development', 'Technology', 'Hardware', 'Software', 'Esports', 'Industry'];
+
+  const filteredArticles = selectedCategory === 'All'
+    ? articles
+    : articles.filter(article => article.category === selectedCategory);
+
   return (
     <div>
       <div className="mb-8">
@@ -137,13 +144,32 @@ export default function NewsPage({ selectedArticleId, onBack }: NewsPageProps) {
         <p className="text-gray-600">Stay updated with the latest happenings in the gaming world</p>
       </div>
 
-      {articles.length === 0 ? (
+      <div className="mb-6 flex items-center space-x-4 overflow-x-auto pb-2">
+        <Filter className="w-5 h-5 text-gray-400 flex-shrink-0" />
+        <div className="flex space-x-2">
+          {categories.map(category => (
+            <button
+              key={category}
+              onClick={() => setSelectedCategory(category)}
+              className={`px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap ${
+                selectedCategory === category
+                  ? 'bg-cyan-600 text-white'
+                  : 'bg-slate-800 text-gray-400 hover:bg-slate-700'
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {filteredArticles.length === 0 ? (
         <div className="text-center py-16 bg-slate-950 rounded-xl shadow-lg">
-          <p className="text-gray-500 text-lg">No news articles available yet.</p>
+          <p className="text-gray-500 text-lg">No news articles available in this category.</p>
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {articles.map((article) => (
+          {filteredArticles.map((article) => (
             <button
               key={article.id}
               onClick={() => fetchArticleById(article.id)}
