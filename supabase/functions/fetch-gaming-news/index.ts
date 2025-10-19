@@ -85,6 +85,12 @@ function getDefaultImage(source: string): string {
     'Game Informer': 'https://images.pexels.com/photos/371924/pexels-photo-371924.jpeg',
     'Shacknews': 'https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg',
     'TechRadar Gaming': 'https://images.pexels.com/photos/3945683/pexels-photo-3945683.jpeg',
+    'Game Developer': 'https://images.pexels.com/photos/1174746/pexels-photo-1174746.jpeg',
+    'IndieDB': 'https://images.pexels.com/photos/2923034/pexels-photo-2923034.jpeg',
+    'Itch.io': 'https://images.pexels.com/photos/371924/pexels-photo-371924.jpeg',
+    'r/gamedev': 'https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg',
+    'r/IndieGaming': 'https://images.pexels.com/photos/7915286/pexels-photo-7915286.jpeg',
+    'Dev.to GameDev': 'https://images.pexels.com/photos/4009599/pexels-photo-4009599.jpeg',
   };
   return images[source] || 'https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg';
 }
@@ -208,6 +214,12 @@ Deno.serve(async (req: Request) => {
       { url: 'https://www.gameinformer.com/feeds/thefeed.aspx', source: 'Game Informer', category: 'Gaming News' },
       { url: 'https://www.shacknews.com/feed/rss', source: 'Shacknews', category: 'Gaming News' },
       { url: 'https://www.techradar.com/rss/gaming/news', source: 'TechRadar Gaming', category: 'Gaming News' },
+      { url: 'https://www.gamedeveloper.com/rss.xml', source: 'Game Developer', category: 'Indie Dev' },
+      { url: 'https://rss.indiedb.com/articles/feed/rss.xml', source: 'IndieDB', category: 'Indie Dev' },
+      { url: 'https://itch.io/feed/new.xml', source: 'Itch.io', category: 'Indie Games' },
+      { url: 'https://www.reddit.com/r/gamedev/.rss', source: 'r/gamedev', category: 'Indie Dev' },
+      { url: 'https://www.reddit.com/r/IndieGaming/.rss', source: 'r/IndieGaming', category: 'Indie Games' },
+      { url: 'https://dev.to/feed/tag/gamedev', source: 'Dev.to GameDev', category: 'Indie Dev' },
     ];
 
     console.log(`Starting to process ${rssFeeds.length} RSS feeds`);
