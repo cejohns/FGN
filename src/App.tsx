@@ -8,6 +8,7 @@ import VideosPage from './components/VideosPage';
 import GalleryPage from './components/GalleryPage';
 import BlogPage from './components/BlogPage';
 import GuidesPage from './components/GuidesPage';
+import ReleaseCalendarPage from './components/ReleaseCalendarPage';
 
 function App() {
   const [currentSection, setCurrentSection] = useState('home');
@@ -31,6 +32,7 @@ function App() {
         {currentSection === 'home' && <HomePage onNavigate={handleNavigate} />}
         {currentSection === 'news' && <NewsPage selectedArticleId={selectedItemId} onBack={handleBack} />}
         {currentSection === 'reviews' && <ReviewsPage selectedReviewId={selectedItemId} onBack={handleBack} />}
+        {currentSection === 'releases' && <ReleaseCalendarPage selectedGameId={selectedItemId} onBack={handleBack} />}
         {currentSection === 'videos' && <VideosPage selectedVideoId={selectedItemId} onBack={handleBack} />}
         {currentSection === 'gallery' && <GalleryPage />}
         {currentSection === 'blog' && <BlogPage selectedPostId={selectedItemId} onBack={handleBack} />}
