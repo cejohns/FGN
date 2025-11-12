@@ -69,7 +69,7 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
     }
   };
 
-  const syncReleases = async (source: 'igdb' | 'rawg' = 'igdb') => {
+  const syncReleases = async (source: 'igdb' | 'rawg' | 'demo' = 'igdb') => {
     setSyncing(true);
     setSyncMessage(null);
     try {
@@ -98,7 +98,7 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
       setSyncMessage('Failed to sync releases. Please try again.');
     } finally {
       setSyncing(false);
-      setTimeout(() => setSyncMessage(null), 5000);
+      setTimeout(() => setSyncMessage(null), 10000);
     }
   };
 
@@ -195,6 +195,13 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
 
           <div className="flex gap-3">
             <button
+              onClick={() => syncReleases('demo')}
+              disabled={syncing}
+              className="px-6 py-2.5 bg-gx-accent hover:bg-gx-accent/80 text-white font-semibold rounded-full transition-all shadow-lg shadow-gx-red hover:shadow-gx-red/70 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {syncing ? 'Loading...' : 'Load Demo Data'}
+            </button>
+            <button
               onClick={() => syncReleases('igdb')}
               disabled={syncing}
               className="px-6 py-2.5 bg-gx-dark hover:bg-gx-midnight text-white font-semibold rounded-full transition-all border border-gx-accent/30 hover:border-gx-accent/50 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -212,7 +219,7 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
         </div>
 
         {syncMessage && (
-          <div className="mb-6 p-4 bg-gx-accent/20 border border-gx-accent/50 rounded-lg text-white">
+          <div className="mb-6 p-4 bg-gx-accent/20 border border-gx-accent/50 rounded-lg text-white whitespace-pre-line">
             {syncMessage}
           </div>
         )}
