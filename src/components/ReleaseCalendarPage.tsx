@@ -33,6 +33,8 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
   const [games, setGames] = useState<GameRelease[]>([]);
   const [selectedGame, setSelectedGame] = useState<GameRelease | null>(null);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'pc' | 'playstation' | 'xbox' | 'switch'>('all');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -64,6 +66,39 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
       console.error('Error fetching games:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const syncReleases = async (source: 'igdb' | 'rawg' = 'igdb') => {
+    setSyncing(true);
+    setSyncMessage(null);
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      const response = await fetch(
+        `${supabaseUrl}/functions/v1/sync-game-releases?source=${source}&days=90`,
+        {
+          headers: {
+            'Authorization': `Bearer ${supabaseKey}`,
+          },
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSyncMessage(result.message);
+        await fetchGames();
+      } else {
+        setSyncMessage(`Sync failed: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error syncing releases:', error);
+      setSyncMessage('Failed to sync releases. Please try again.');
+    } finally {
+      setSyncing(false);
+      setTimeout(() => setSyncMessage(null), 5000);
     }
   };
 
@@ -158,10 +193,29 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
             <p className="text-gray-400">Upcoming game releases you don't want to miss</p>
           </div>
 
-          <button className="px-6 py-2.5 bg-gx-accent hover:bg-gx-accent/80 text-white font-semibold rounded-full transition-all shadow-lg shadow-gx-red hover:shadow-gx-red/70 hover:scale-105">
-            Sign In
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => syncReleases('igdb')}
+              disabled={syncing}
+              className="px-6 py-2.5 bg-gx-dark hover:bg-gx-midnight text-white font-semibold rounded-full transition-all border border-gx-accent/30 hover:border-gx-accent/50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {syncing ? 'Syncing...' : 'Sync IGDB'}
+            </button>
+            <button
+              onClick={() => syncReleases('rawg')}
+              disabled={syncing}
+              className="px-6 py-2.5 bg-gx-dark hover:bg-gx-midnight text-white font-semibold rounded-full transition-all border border-gx-accent/30 hover:border-gx-accent/50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {syncing ? 'Syncing...' : 'Sync RAWG'}
+            </button>
+          </div>
         </div>
+
+        {syncMessage && (
+          <div className="mb-6 p-4 bg-gx-accent/20 border border-gx-accent/50 rounded-lg text-white">
+            {syncMessage}
+          </div>
+        )}
 
         <div className="mb-6 flex items-center gap-3">
           <Filter className="w-5 h-5 text-gx-accent" />
