@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Calendar, ChevronLeft, ChevronRight, Clock, Tag, DollarSign, ExternalLink, Gamepad2, Users } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import GameDetailsModal from './GameDetailsModal';
 
 interface GameRelease {
   id: string;
@@ -32,7 +33,8 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
   const [games, setGames] = useState<GameRelease[]>([]);
   const [selectedGame, setSelectedGame] = useState<GameRelease | null>(null);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'upcoming' | 'this-month'>('all');
+  const [filter, setFilter] = useState<'all' | 'pc' | 'playstation' | 'xbox' | 'switch'>('all');
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchGames();
@@ -82,34 +84,13 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
   const handleGameClick = (game: GameRelease) => {
     setSelectedGame(game);
     incrementViewCount(game.id);
-    window.scrollTo(0, 0);
-  };
-
-  const handlePreviousGame = () => {
-    if (!selectedGame) return;
-    const currentIndex = games.findIndex(g => g.id === selectedGame.id);
-    if (currentIndex > 0) {
-      const prevGame = games[currentIndex - 1];
-      setSelectedGame(prevGame);
-      incrementViewCount(prevGame.id);
-      window.scrollTo(0, 0);
-    }
-  };
-
-  const handleNextGame = () => {
-    if (!selectedGame) return;
-    const currentIndex = games.findIndex(g => g.id === selectedGame.id);
-    if (currentIndex < games.length - 1) {
-      const nextGame = games[currentIndex + 1];
-      setSelectedGame(nextGame);
-      incrementViewCount(nextGame.id);
-      window.scrollTo(0, 0);
-    }
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+    return { day, month };
   };
 
   const getDaysUntilRelease = (dateString: string) => {
@@ -118,310 +99,227 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
     const diffTime = releaseDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays < 0) return 'Released';
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Tomorrow';
-    return `${diffDays} days`;
+    if (diffDays < 0) return null;
+    if (diffDays === 0) return 'TODAY';
+    if (diffDays === 1) return 'TOMORROW';
+    if (diffDays <= 7) return `${diffDays} DAYS`;
+    return null;
   };
 
   const getFilteredGames = () => {
-    const today = new Date();
-    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    if (filter === 'all') return games;
 
-    switch (filter) {
-      case 'upcoming':
-        return games.filter(game => new Date(game.release_date) >= today);
-      case 'this-month':
-        return games.filter(game => {
-          const releaseDate = new Date(game.release_date);
-          return releaseDate >= today && releaseDate <= endOfMonth;
-        });
-      default:
-        return games;
+    return games.filter(game => {
+      const platforms = game.platform.toLowerCase();
+      switch (filter) {
+        case 'pc':
+          return platforms.includes('pc');
+        case 'playstation':
+          return platforms.includes('playstation') || platforms.includes('ps');
+        case 'xbox':
+          return platforms.includes('xbox');
+        case 'switch':
+          return platforms.includes('switch');
+        default:
+          return true;
+      }
+    });
+  };
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 400;
+      const newScrollLeft = direction === 'left'
+        ? scrollContainerRef.current.scrollLeft - scrollAmount
+        : scrollContainerRef.current.scrollLeft + scrollAmount;
+
+      scrollContainerRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      });
     }
   };
 
   const filteredGames = getFilteredGames();
-  const currentIndex = selectedGame ? games.findIndex(g => g.id === selectedGame.id) : -1;
-
-  if (selectedGame) {
-    return (
-      <div className="max-w-6xl mx-auto">
-        <button
-          onClick={() => {
-            setSelectedGame(null);
-            onBack();
-          }}
-          className="mb-6 flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors"
-        >
-          <ChevronLeft className="w-5 h-5" />
-          Back to Calendar
-        </button>
-
-        <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl overflow-hidden border border-slate-700/50 shadow-2xl">
-          {selectedGame.banner_image && (
-            <div className="relative h-96 overflow-hidden">
-              <img
-                src={selectedGame.banner_image}
-                alt={selectedGame.title}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent" />
-            </div>
-          )}
-
-          <div className="p-8">
-            <div className="flex items-start gap-6 mb-6">
-              <img
-                src={selectedGame.cover_image}
-                alt={selectedGame.title}
-                className="w-48 h-64 object-cover rounded-lg shadow-xl border-2 border-slate-700"
-              />
-
-              <div className="flex-1">
-                <h1 className="text-4xl font-bold text-white mb-3">{selectedGame.title}</h1>
-
-                <div className="flex flex-wrap gap-3 mb-4">
-                  <span className="px-3 py-1 bg-cyan-500/20 text-cyan-300 rounded-full text-sm border border-cyan-500/30">
-                    {selectedGame.genre}
-                  </span>
-                  <span className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-sm border border-blue-500/30">
-                    {selectedGame.platform}
-                  </span>
-                  {selectedGame.rating_expected && (
-                    <span className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-sm border border-purple-500/30">
-                      {selectedGame.rating_expected}
-                    </span>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <Calendar className="w-5 h-5 text-cyan-400" />
-                    <div>
-                      <div className="text-xs text-slate-400">Release Date</div>
-                      <div className="font-semibold">{formatDate(selectedGame.release_date)}</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <Clock className="w-5 h-5 text-cyan-400" />
-                    <div>
-                      <div className="text-xs text-slate-400">Countdown</div>
-                      <div className="font-semibold">{getDaysUntilRelease(selectedGame.release_date)}</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <Gamepad2 className="w-5 h-5 text-cyan-400" />
-                    <div>
-                      <div className="text-xs text-slate-400">Developer</div>
-                      <div className="font-semibold">{selectedGame.developer}</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <Users className="w-5 h-5 text-cyan-400" />
-                    <div>
-                      <div className="text-xs text-slate-400">Publisher</div>
-                      <div className="font-semibold">{selectedGame.publisher}</div>
-                    </div>
-                  </div>
-
-                  {selectedGame.price && (
-                    <div className="flex items-center gap-2 text-slate-300">
-                      <DollarSign className="w-5 h-5 text-cyan-400" />
-                      <div>
-                        <div className="text-xs text-slate-400">Price</div>
-                        <div className="font-semibold">{selectedGame.price}</div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {selectedGame.preorder_link && (
-                  <a
-                    href={selectedGame.preorder_link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold rounded-lg transition-all shadow-lg shadow-cyan-500/30"
-                  >
-                    Pre-Order Now
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold text-white mb-3">About</h2>
-                <p className="text-slate-300 leading-relaxed">{selectedGame.description}</p>
-              </div>
-
-              {selectedGame.features && selectedGame.features.length > 0 && (
-                <div>
-                  <h2 className="text-2xl font-bold text-white mb-3 flex items-center gap-2">
-                    <Tag className="w-6 h-6 text-cyan-400" />
-                    Key Features
-                  </h2>
-                  <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {selectedGame.features.map((feature, index) => (
-                      <li key={index} className="flex items-start gap-2 text-slate-300">
-                        <span className="text-cyan-400 mt-1">•</span>
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {selectedGame.trailer_url && (
-                <div>
-                  <h2 className="text-2xl font-bold text-white mb-3">Trailer</h2>
-                  <div className="aspect-video bg-slate-900 rounded-lg overflow-hidden">
-                    <iframe
-                      src={selectedGame.trailer_url}
-                      className="w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="flex justify-between items-center mt-8 pt-6 border-t border-slate-700">
-              <button
-                onClick={handlePreviousGame}
-                disabled={currentIndex === 0}
-                className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
-              >
-                <ChevronLeft className="w-5 h-5" />
-                Previous Game
-              </button>
-
-              <button
-                onClick={handleNextGame}
-                disabled={currentIndex === games.length - 1}
-                className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
-              >
-                Next Game
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const relatedGames = selectedGame
+    ? games.filter(g => g.id !== selectedGame.id && g.genre === selectedGame.genre).slice(0, 3)
+    : [];
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-          <Calendar className="w-10 h-10 text-cyan-400" />
-          Release Calendar
-        </h1>
-        <p className="text-slate-400">Track upcoming game releases and never miss a launch</p>
-      </div>
+    <div className="relative min-h-screen">
+      <div className="absolute inset-0 bg-gx-gradient bg-gx-grid opacity-50" />
 
-      <div className="flex gap-3 mb-8">
-        <button
-          onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-lg font-medium transition-all ${
-            filter === 'all'
-              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/30'
-              : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-          }`}
-        >
-          All Games
-        </button>
-        <button
-          onClick={() => setFilter('upcoming')}
-          className={`px-4 py-2 rounded-lg font-medium transition-all ${
-            filter === 'upcoming'
-              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/30'
-              : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-          }`}
-        >
-          Upcoming
-        </button>
-        <button
-          onClick={() => setFilter('this-month')}
-          className={`px-4 py-2 rounded-lg font-medium transition-all ${
-            filter === 'this-month'
-              ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/30'
-              : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-          }`}
-        >
-          This Month
-        </button>
-      </div>
+      <div className="relative z-10">
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-5xl font-bold text-white mb-2 font-poppins tracking-tight">
+              GX Corner
+            </h1>
+            <p className="text-gray-400">Upcoming game releases you don't want to miss</p>
+          </div>
 
-      {loading ? (
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto"></div>
-          <p className="text-slate-400 mt-4">Loading games...</p>
+          <button className="px-6 py-2.5 bg-gx-accent hover:bg-gx-accent/80 text-white font-semibold rounded-full transition-all shadow-lg shadow-gx-red hover:shadow-gx-red/70 hover:scale-105">
+            Sign In
+          </button>
         </div>
-      ) : filteredGames.length === 0 ? (
-        <div className="text-center py-12 bg-slate-800/30 rounded-xl border border-slate-700/50">
-          <Calendar className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-          <p className="text-slate-400 text-lg">No games found</p>
+
+        <div className="mb-6 flex items-center gap-3">
+          <Filter className="w-5 h-5 text-gx-accent" />
+          <div className="flex gap-2">
+            {[
+              { id: 'all', label: 'All Platforms' },
+              { id: 'pc', label: 'PC' },
+              { id: 'playstation', label: 'PlayStation' },
+              { id: 'xbox', label: 'Xbox' },
+              { id: 'switch', label: 'Switch' },
+            ].map((platform) => (
+              <button
+                key={platform.id}
+                onClick={() => setFilter(platform.id as any)}
+                className={`px-4 py-2 rounded-full font-medium transition-all ${
+                  filter === platform.id
+                    ? 'bg-gx-accent text-white shadow-gx-red'
+                    : 'bg-gx-dark text-gray-300 hover:bg-gx-midnight border border-white/10 hover:border-gx-accent/30'
+                }`}
+              >
+                {platform.label}
+              </button>
+            ))}
+          </div>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredGames.map((game) => (
-            <div
-              key={game.id}
-              onClick={() => handleGameClick(game)}
-              className="group cursor-pointer bg-slate-800/50 backdrop-blur-sm rounded-xl overflow-hidden border border-slate-700/50 hover:border-cyan-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/20 hover:-translate-y-1"
+
+        {loading ? (
+          <div className="text-center py-20">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-gx-accent mx-auto shadow-gx-red"></div>
+            <p className="text-gray-400 mt-6 text-lg">Loading releases...</p>
+          </div>
+        ) : filteredGames.length === 0 ? (
+          <div className="text-center py-20 bg-gx-midnight/50 rounded-2xl border border-white/5">
+            <p className="text-gray-400 text-xl">No releases found for this platform</p>
+          </div>
+        ) : (
+          <div className="relative group">
+            <button
+              onClick={() => scroll('left')}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-3 bg-gx-dark/90 hover:bg-gx-accent text-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110 hover:shadow-gx-red"
             >
-              <div className="relative h-80 overflow-hidden">
-                <img
-                  src={game.cover_image}
-                  alt={game.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent" />
+              <ChevronLeft className="w-6 h-6" />
+            </button>
 
-                {game.is_featured && (
-                  <div className="absolute top-3 right-3 px-3 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full shadow-lg">
-                    Featured
-                  </div>
-                )}
+            <button
+              onClick={() => scroll('right')}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-3 bg-gx-dark/90 hover:bg-gx-accent text-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110 hover:shadow-gx-red"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
 
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <h3 className="text-xl font-bold text-white mb-2 line-clamp-2">{game.title}</h3>
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="px-2 py-1 bg-cyan-500/30 backdrop-blur-sm text-cyan-200 rounded border border-cyan-500/50">
-                      {game.genre}
-                    </span>
-                    <span className="px-2 py-1 bg-blue-500/30 backdrop-blur-sm text-blue-200 rounded border border-blue-500/50">
-                      {game.platform}
-                    </span>
-                  </div>
-                </div>
-              </div>
+            <div
+              ref={scrollContainerRef}
+              className="flex gap-5 overflow-x-auto pb-6 scrollbar-hide snap-x snap-mandatory"
+              style={{
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+              }}
+            >
+              {filteredGames.map((game) => {
+                const { day, month } = formatDate(game.release_date);
+                const statusLabel = getDaysUntilRelease(game.release_date);
 
-              <div className="p-4 border-t border-slate-700/50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <Calendar className="w-4 h-4 text-cyan-400" />
-                    <span className="text-sm">{formatDate(game.release_date)}</span>
+                return (
+                  <div
+                    key={game.id}
+                    onClick={() => handleGameClick(game)}
+                    className="flex-shrink-0 w-64 snap-start cursor-pointer group/card"
+                  >
+                    <div className="relative overflow-hidden rounded-2xl border-2 border-transparent hover:border-gx-accent/50 transition-all duration-300 hover:scale-105 hover:shadow-gx-card">
+                      <div className="relative h-96 overflow-hidden bg-gx-dark">
+                        <img
+                          src={game.cover_image}
+                          alt={game.title}
+                          className="w-full h-full object-cover group-hover/card:scale-110 transition-transform duration-500"
+                        />
+
+                        <div className="absolute inset-0 bg-gradient-to-t from-gx-dark via-gx-dark/20 to-transparent" />
+
+                        <div className="absolute top-3 left-3 bg-gx-accent/90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-lg border border-gx-accent">
+                          <div className="text-2xl font-bold text-white leading-none">{day}</div>
+                          <div className="text-xs font-semibold text-white/90 uppercase tracking-wider">{month}</div>
+                        </div>
+
+                        {statusLabel && (
+                          <div className="absolute top-3 right-0 bg-gx-accent text-white text-xs font-bold px-4 py-2 shadow-lg uppercase tracking-wider">
+                            {statusLabel}
+                          </div>
+                        )}
+
+                        {game.is_featured && (
+                          <div className="absolute top-14 right-0 bg-gx-neon text-gx-dark text-xs font-bold px-4 py-2 shadow-lg uppercase tracking-wider">
+                            Featured
+                          </div>
+                        )}
+
+                        {game.rating_expected && (
+                          <div className="absolute bottom-3 right-3 bg-gx-dark/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full border border-white/20">
+                            {game.rating_expected}
+                          </div>
+                        )}
+
+                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gx-dark/95 to-transparent">
+                          <h3 className="text-white font-bold text-lg mb-1 line-clamp-2 font-poppins">
+                            {game.title}
+                          </h3>
+                          <p className="text-gray-300 text-sm line-clamp-1">
+                            {game.genre.split(',')[0]}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-1.5 px-1">
+                      {game.platform.split(',').slice(0, 3).map((platform, idx) => (
+                        <span
+                          key={idx}
+                          className="text-xs text-gray-400 bg-gx-dark/50 px-2 py-1 rounded border border-white/5"
+                        >
+                          {platform.trim()}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-cyan-400" />
-                    <span className="text-sm font-semibold text-cyan-300">
-                      {getDaysUntilRelease(game.release_date)}
-                    </span>
-                  </div>
-                </div>
-              </div>
+                );
+              })}
             </div>
-          ))}
+          </div>
+        )}
+
+        <div className="mt-12 text-center">
+          <p className="text-gray-500 text-sm">
+            Scroll horizontally to explore more releases • Click any game for details
+          </p>
         </div>
+      </div>
+
+      {selectedGame && (
+        <GameDetailsModal
+          game={selectedGame}
+          relatedGames={relatedGames}
+          onClose={() => setSelectedGame(null)}
+          onGameSelect={(game) => {
+            setSelectedGame(game);
+            incrementViewCount(game.id);
+          }}
+        />
       )}
+
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 }
