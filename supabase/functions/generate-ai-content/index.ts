@@ -30,7 +30,7 @@ async function generateWithOpenRouter(prompt: string, apiKey: string): Promise<s
       'X-Title': 'FireStar Gaming Network',
     },
     body: JSON.stringify({
-      model: 'google/gemini-flash-1.5-8b',
+      model: 'google/gemini-2.0-flash-exp:free',
       messages: [
         {
           role: 'user',
