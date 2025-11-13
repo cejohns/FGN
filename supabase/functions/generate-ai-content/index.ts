@@ -30,7 +30,7 @@ async function generateWithOpenRouter(prompt: string, apiKey: string): Promise<s
       'X-Title': 'FireStar Gaming Network',
     },
     body: JSON.stringify({
-      model: 'meta-llama/llama-3.1-8b-instruct:free',
+      model: 'meta-llama/llama-3.2-3b-instruct:free',
       messages: [
         {
           role: 'user',
@@ -43,10 +43,16 @@ async function generateWithOpenRouter(prompt: string, apiKey: string): Promise<s
   });
 
   if (!response.ok) {
-    throw new Error(`OpenRouter API error: ${response.statusText}`);
+    const errorText = await response.text();
+    throw new Error(`OpenRouter API error (${response.status}): ${response.statusText}. Details: ${errorText}`);
   }
 
   const data = await response.json();
+
+  if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+    throw new Error('Invalid response format from OpenRouter API');
+  }
+
   return data.choices[0].message.content;
 }
 
