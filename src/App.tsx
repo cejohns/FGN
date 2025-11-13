@@ -9,10 +9,15 @@ import GalleryPage from './components/GalleryPage';
 import BlogPage from './components/BlogPage';
 import GuidesPage from './components/GuidesPage';
 import ReleaseCalendarPage from './components/ReleaseCalendarPage';
+import AdminLogin from './components/AdminLogin';
+import AdminPanel from './components/AdminPanel';
 
 function App() {
   const [currentSection, setCurrentSection] = useState('home');
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>(undefined);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => {
+    return sessionStorage.getItem('adminAuth') === 'true';
+  });
 
   const handleNavigate = (section: string, itemId?: string) => {
     setCurrentSection(section);
@@ -22,6 +27,10 @@ function App() {
 
   const handleBack = () => {
     setSelectedItemId(undefined);
+  };
+
+  const handleAdminLogin = () => {
+    setIsAdminAuthenticated(true);
   };
 
   return (
@@ -37,6 +46,9 @@ function App() {
         {currentSection === 'gallery' && <GalleryPage />}
         {currentSection === 'blog' && <BlogPage selectedPostId={selectedItemId} onBack={handleBack} />}
         {currentSection === 'guides' && <GuidesPage />}
+        {currentSection === 'admin' && (
+          isAdminAuthenticated ? <AdminPanel /> : <AdminLogin onLogin={handleAdminLogin} />
+        )}
       </main>
 
       <Footer />

@@ -49,6 +49,16 @@ export default function Header({ currentSection, onNavigate }: HeaderProps) {
                 {item.label}
               </button>
             ))}
+            <button
+              onClick={() => onNavigate('admin')}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                currentSection === 'admin'
+                  ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/50'
+                  : 'text-gray-300 hover:bg-slate-800 hover:text-red-400'
+              }`}
+            >
+              Admin
+            </button>
           </nav>
 
           <button
@@ -77,6 +87,19 @@ export default function Header({ currentSection, onNavigate }: HeaderProps) {
                 {item.label}
               </button>
             ))}
+            <button
+              onClick={() => {
+                onNavigate('admin');
+                setMobileMenuOpen(false);
+              }}
+              className={`block w-full text-left px-4 py-3 rounded-lg font-medium transition-all ${
+                currentSection === 'admin'
+                  ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/50'
+                  : 'text-gray-300 hover:bg-slate-800 hover:text-red-400'
+              }`}
+            >
+              Admin
+            </button>
           </nav>
         )}
       </div>
