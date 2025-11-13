@@ -482,11 +482,27 @@ export default function AdminPanel() {
 
             <div className="bg-slate-950 rounded-lg p-4 border border-green-200">
               <h4 className="font-semibold text-white mb-3">
-                {result.clips_added !== undefined ? 'Videos Fetched:' :
+                {result.inserted !== undefined && result.updated !== undefined ? 'Releases Synced:' :
+                 result.clips_added !== undefined ? 'Videos Fetched:' :
                  result.reviews_added !== undefined && result.news_added !== undefined ? 'Content Fetched:' :
                  result.results?.news_articles !== undefined ? 'Content Added:' : 'Images Updated:'}
               </h4>
-              {result.clips_added !== undefined ? (
+              {result.inserted !== undefined && result.updated !== undefined ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
+                  <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-red-900">{result.inserted}</div>
+                    <div className="text-xs text-red-700 font-medium">New Releases</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-pink-900">{result.updated}</div>
+                    <div className="text-xs text-pink-700 font-medium">Updated</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-purple-900">{result.fetched || 0}</div>
+                    <div className="text-xs text-purple-700 font-medium">Total Fetched</div>
+                  </div>
+                </div>
+              ) : result.clips_added !== undefined ? (
                 <div className="grid grid-cols-2 gap-4 text-center">
                   <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-3">
                     <div className="text-2xl font-bold text-purple-900">{result.clips_added}</div>
