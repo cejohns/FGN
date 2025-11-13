@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { RefreshCw, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Eye } from 'lucide-react';
+import { RefreshCw, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Eye, FileText } from 'lucide-react';
 import { NewsArticleForm, GameReviewForm, VideoForm, GalleryImageForm, BlogPostForm, GuideForm } from './ContentForms';
 import ReleaseCalendarPage from './ReleaseCalendarPage';
+import DraftPreview from './DraftPreview';
 
 export default function AdminPanel() {
   const [loading, setLoading] = useState(false);
@@ -10,6 +11,7 @@ export default function AdminPanel() {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [aiTopic, setAiTopic] = useState('');
   const [showPreview, setShowPreview] = useState(false);
+  const [showDrafts, setShowDrafts] = useState(false);
 
   const fetchGamingNews = async () => {
     setLoading(true);
@@ -290,6 +292,16 @@ export default function AdminPanel() {
     }
   };
 
+  if (showDrafts) {
+    return (
+      <div className="min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          <DraftPreview onBack={() => setShowDrafts(false)} />
+        </div>
+      </div>
+    );
+  }
+
   if (showPreview) {
     return (
       <div className="min-h-screen">
@@ -311,8 +323,19 @@ export default function AdminPanel() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-slate-950 rounded-xl shadow-lg p-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Admin Panel</h1>
-        <p className="text-gray-600 mb-6">Manage automatic content updates and sync gaming news</p>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">Admin Panel</h1>
+            <p className="text-gray-600">Manage automatic content updates and sync gaming news</p>
+          </div>
+          <button
+            onClick={() => setShowDrafts(true)}
+            className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-bold rounded-lg shadow-lg transition-all"
+          >
+            <FileText className="w-5 h-5" />
+            <span>Review Drafts</span>
+          </button>
+        </div>
 
         <div className="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-lg p-6 mb-6">
           <h2 className="text-xl font-bold text-white mb-3">Game Releases Management</h2>

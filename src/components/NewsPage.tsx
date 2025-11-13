@@ -27,6 +27,7 @@ export default function NewsPage({ selectedArticleId, onBack }: NewsPageProps) {
       const { data, error } = await supabase
         .from('news_articles')
         .select('*')
+        .eq('status', 'published')
         .order('published_at', { ascending: false });
 
       if (error) throw error;
@@ -45,6 +46,7 @@ export default function NewsPage({ selectedArticleId, onBack }: NewsPageProps) {
         .from('news_articles')
         .select('*')
         .eq('id', id)
+        .eq('status', 'published')
         .maybeSingle();
 
       if (error) throw error;

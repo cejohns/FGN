@@ -18,6 +18,7 @@ export default function GalleryPage() {
       const { data, error } = await supabase
         .from('gallery_images')
         .select('*')
+        .eq('status', 'published')
         .order('published_at', { ascending: false });
 
       if (error) throw error;

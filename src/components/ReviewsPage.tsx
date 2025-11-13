@@ -27,6 +27,7 @@ export default function ReviewsPage({ selectedReviewId, onBack }: ReviewsPagePro
       const { data, error } = await supabase
         .from('game_reviews')
         .select('*')
+        .eq('status', 'published')
         .order('published_at', { ascending: false });
 
       if (error) throw error;
@@ -45,6 +46,7 @@ export default function ReviewsPage({ selectedReviewId, onBack }: ReviewsPagePro
         .from('game_reviews')
         .select('*')
         .eq('id', id)
+        .eq('status', 'published')
         .maybeSingle();
 
       if (error) throw error;

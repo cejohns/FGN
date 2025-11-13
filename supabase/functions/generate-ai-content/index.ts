@@ -189,9 +189,10 @@ Be descriptive and engaging.`;
               featured_image: content.featured_image,
               category: content.category,
               author: 'FireStar AI Editorial',
-              published_at: new Date().toISOString(),
+              published_at: null,
               view_count: 0,
               is_featured: false,
+              status: 'draft',
             });
             break;
 
@@ -209,9 +210,10 @@ Be descriptive and engaging.`;
               excerpt: content.excerpt,
               content: content.content,
               reviewer: 'FireStar AI Editorial',
-              published_at: new Date().toISOString(),
+              published_at: null,
               view_count: 0,
               is_featured: false,
+              status: 'draft',
             });
             break;
 
@@ -224,9 +226,10 @@ Be descriptive and engaging.`;
               featured_image: content.featured_image,
               category: content.category,
               author: 'FireStar Team',
-              published_at: new Date().toISOString(),
+              published_at: null,
               view_count: 0,
               is_featured: false,
+              status: 'draft',
             });
             break;
 
@@ -240,9 +243,10 @@ Be descriptive and engaging.`;
               category: content.category,
               duration: content.duration,
               creator: 'FireStar Gaming',
-              published_at: new Date().toISOString(),
+              published_at: null,
               view_count: 0,
               is_featured: false,
+              status: 'draft',
             });
             break;
 
@@ -256,9 +260,10 @@ Be descriptive and engaging.`;
               category: content.category,
               game_title: content.game_title || null,
               photographer: 'FireStar Gaming',
-              published_at: new Date().toISOString(),
+              published_at: null,
               view_count: 0,
               is_featured: false,
+              status: 'draft',
             });
             break;
         }

@@ -25,7 +25,7 @@ export default function BlogPage({ selectedPostId, onBack }: BlogPageProps) {
   const fetchAllPosts = async () => {
     setLoading(true);
     try {
-      let query = supabase.from('blog_posts').select('*');
+      let query = supabase.from('blog_posts').select('*').eq('status', 'published');
 
       if (filter !== 'all') {
         query = query.eq('post_type', filter);
@@ -49,6 +49,7 @@ export default function BlogPage({ selectedPostId, onBack }: BlogPageProps) {
         .from('blog_posts')
         .select('*')
         .eq('id', id)
+        .eq('status', 'published')
         .maybeSingle();
 
       if (error) throw error;

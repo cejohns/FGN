@@ -20,10 +20,10 @@ export default function HomePage({ onNavigate }: HomePageProps) {
   const fetchFeaturedContent = async () => {
     try {
       const [newsRes, reviewsRes, videosRes, blogsRes] = await Promise.all([
-        supabase.from('news_articles').select('*').eq('is_featured', true).order('published_at', { ascending: false }).limit(3),
-        supabase.from('game_reviews').select('*').eq('is_featured', true).order('published_at', { ascending: false }).limit(3),
-        supabase.from('videos').select('*').eq('is_featured', true).order('published_at', { ascending: false }).limit(3),
-        supabase.from('blog_posts').select('*').order('published_at', { ascending: false }).limit(3),
+        supabase.from('news_articles').select('*').eq('status', 'published').eq('is_featured', true).order('published_at', { ascending: false }).limit(3),
+        supabase.from('game_reviews').select('*').eq('status', 'published').eq('is_featured', true).order('published_at', { ascending: false }).limit(3),
+        supabase.from('videos').select('*').eq('status', 'published').eq('is_featured', true).order('published_at', { ascending: false }).limit(3),
+        supabase.from('blog_posts').select('*').eq('status', 'published').order('published_at', { ascending: false }).limit(3),
       ]);
 
       if (newsRes.data) setFeaturedNews(newsRes.data);

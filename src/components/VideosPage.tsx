@@ -27,6 +27,7 @@ export default function VideosPage({ selectedVideoId, onBack }: VideosPageProps)
       const { data, error } = await supabase
         .from('videos')
         .select('*')
+        .eq('status', 'published')
         .order('published_at', { ascending: false });
 
       if (error) throw error;
@@ -45,6 +46,7 @@ export default function VideosPage({ selectedVideoId, onBack }: VideosPageProps)
         .from('videos')
         .select('*')
         .eq('id', id)
+        .eq('status', 'published')
         .maybeSingle();
 
       if (error) throw error;
