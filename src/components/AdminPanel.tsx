@@ -227,6 +227,69 @@ export default function AdminPanel() {
     }
   };
 
+  const generateMixedContent = async () => {
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    const totalCreated = { news: 0, review: 0, blog: 0 };
+    const allErrors: string[] = [];
+
+    try {
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-ai-content`;
+
+      const types: Array<{ type: 'news' | 'review' | 'blog', count: number }> = [
+        { type: 'news', count: 2 },
+        { type: 'review', count: 1 },
+        { type: 'blog', count: 2 },
+      ];
+
+      for (const { type, count } of types) {
+        try {
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              type,
+              topic: aiTopic || undefined,
+              count,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            totalCreated[type] = data.created || 0;
+            if (data.errors) {
+              allErrors.push(...data.errors);
+            }
+          } else {
+            allErrors.push(`${type}: ${data.error || 'Failed to generate'}`);
+          }
+        } catch (err: any) {
+          allErrors.push(`${type}: ${err.message}`);
+        }
+      }
+
+      const totalItems = Object.values(totalCreated).reduce((a, b) => a + b, 0);
+
+      setResult({
+        created: totalItems,
+        items: [],
+        errors: allErrors,
+        message: `Generated ${totalItems} items: ${totalCreated.news} news, ${totalCreated.review} reviews, ${totalCreated.blog} blogs`,
+      });
+      setAiTopic('');
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (showPreview) {
     return (
       <div className="min-h-screen">
@@ -483,9 +546,11 @@ export default function AdminPanel() {
             <div className="bg-slate-950 rounded-lg p-4 border border-green-200">
               <h4 className="font-semibold text-white mb-3">
                 {result.inserted !== undefined && result.updated !== undefined ? 'Releases Synced:' :
+                 result.created !== undefined && result.items !== undefined ? 'AI Content Generated:' :
                  result.clips_added !== undefined ? 'Videos Fetched:' :
                  result.reviews_added !== undefined && result.news_added !== undefined ? 'Content Fetched:' :
-                 result.results?.news_articles !== undefined ? 'Content Added:' : 'Images Updated:'}
+                 result.results?.news_articles !== undefined ? 'Content Added:' :
+                 result.results?.reviews_updated !== undefined ? 'Images Updated:' : 'Success!'}
               </h4>
               {result.inserted !== undefined && result.updated !== undefined ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
@@ -501,6 +566,23 @@ export default function AdminPanel() {
                     <div className="text-2xl font-bold text-purple-900">{result.fetched || 0}</div>
                     <div className="text-xs text-purple-700 font-medium">Total Fetched</div>
                   </div>
+                </div>
+              ) : result.created !== undefined && result.items !== undefined ? (
+                <div>
+                  <div className="bg-gradient-to-br from-violet-50 to-purple-100 rounded-lg p-4 text-center mb-4">
+                    <div className="text-3xl font-bold text-violet-900">{result.created}</div>
+                    <div className="text-sm text-violet-700 font-medium">Items Created</div>
+                  </div>
+                  {result.errors && result.errors.length > 0 && (
+                    <div className="mt-3 p-3 bg-yellow-50 rounded border border-yellow-200">
+                      <p className="text-sm font-semibold text-yellow-900 mb-2">Warnings:</p>
+                      <ul className="text-xs text-yellow-800 space-y-1">
+                        {result.errors.slice(0, 5).map((err: string, idx: number) => (
+                          <li key={idx}>• {err}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               ) : result.clips_added !== undefined ? (
                 <div className="grid grid-cols-2 gap-4 text-center">
@@ -688,15 +770,11 @@ export default function AdminPanel() {
                 Generate 3 Gallery
               </button>
               <button
-                onClick={() => {
-                  generateAIContent('news', 2);
-                  setTimeout(() => generateAIContent('review', 1), 3000);
-                  setTimeout(() => generateAIContent('blog', 2), 6000);
-                }}
+                onClick={generateMixedContent}
                 disabled={loading}
                 className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-semibold py-3 px-4 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               >
-                Generate Mixed
+                {loading ? 'Generating...' : 'Generate Mixed'}
               </button>
             </div>
 
