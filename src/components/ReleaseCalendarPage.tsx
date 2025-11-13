@@ -188,7 +188,7 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-5xl font-bold text-white mb-2 font-poppins tracking-tight">
-              GX Corner
+             New Releases
             </h1>
             <p className="text-gray-400">Upcoming game releases you don't want to miss</p>
           </div>
@@ -233,6 +233,10 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
               { id: 'playstation', label: 'PlayStation' },
               { id: 'xbox', label: 'Xbox' },
               { id: 'switch', label: 'Switch' },
+        { id: 'sMac', label: 'Mac' },
+        { id: 'Linux', label: 'Linux' },
+        { id: 'iOS', label: 'iOS' },
+        { id: 'Andriod', label: 'Andriodh' },
             ].map((platform) => (
               <button
                 key={platform.id}
