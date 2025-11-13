@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { RefreshCw, AlertCircle, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { RefreshCw, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Eye } from 'lucide-react';
 import { NewsArticleForm, GameReviewForm, VideoForm, GalleryImageForm, BlogPostForm, GuideForm } from './ContentForms';
+import ReleaseCalendarPage from './ReleaseCalendarPage';
 
 export default function AdminPanel() {
   const [loading, setLoading] = useState(false);
@@ -8,6 +9,7 @@ export default function AdminPanel() {
   const [error, setError] = useState<string | null>(null);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [aiTopic, setAiTopic] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
 
   const fetchGamingNews = async () => {
     setLoading(true);
@@ -193,11 +195,116 @@ export default function AdminPanel() {
     }
   };
 
+  const syncReleases = async (source: 'igdb' | 'rawg' | 'demo' = 'demo') => {
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      const response = await fetch(
+        `${supabaseUrl}/functions/v1/sync-game-releases?source=${source}&days=90`,
+        {
+          headers: {
+            'Authorization': `Bearer ${supabaseKey}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setResult(data);
+      } else {
+        setError(data.error || 'Failed to sync releases');
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (showPreview) {
+    return (
+      <div className="min-h-screen">
+        <div className="max-w-7xl mx-auto mb-6">
+          <button
+            onClick={() => setShowPreview(false)}
+            className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-lg transition-all flex items-center gap-2"
+          >
+            ← Back to Admin
+          </button>
+        </div>
+        <div className="max-w-7xl mx-auto">
+          <ReleaseCalendarPage onBack={() => setShowPreview(false)} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-slate-950 rounded-xl shadow-lg p-8">
         <h1 className="text-3xl font-bold text-white mb-2">Admin Panel</h1>
         <p className="text-gray-600 mb-6">Manage automatic content updates and sync gaming news</p>
+
+        <div className="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-lg p-6 mb-6">
+          <h2 className="text-xl font-bold text-white mb-3">Game Releases Management</h2>
+          <p className="text-gray-700 mb-4">
+            Manage upcoming game releases for the GX Corner section. Load demo data or sync with IGDB/RAWG APIs.
+          </p>
+
+          <div className="bg-slate-950 rounded-lg p-4 mb-4 border border-red-200">
+            <h3 className="font-semibold text-white mb-2">What will be synced:</h3>
+            <ul className="text-sm text-gray-700 space-y-1 mb-3">
+              <li>• <strong>Game Covers</strong> - Official cover art from IGDB</li>
+              <li>• <strong>Release Dates</strong> - Accurate release dates for upcoming games</li>
+              <li>• <strong>Game Details</strong> - Developer, publisher, genre, platform info</li>
+              <li>• <strong>Screenshots</strong> - Banner images and screenshots</li>
+            </ul>
+            <p className="text-xs text-gray-600 mt-3">
+              Demo data includes 8 curated upcoming games. IGDB/RAWG sync requires API credentials.
+            </p>
+          </div>
+
+          <div className="flex gap-3 mb-4">
+            <button
+              onClick={() => syncReleases('demo')}
+              disabled={loading}
+              className="flex-1 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            >
+              <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+              <span>{loading ? 'Loading...' : 'Load Demo Data'}</span>
+            </button>
+            <button
+              onClick={() => syncReleases('igdb')}
+              disabled={loading}
+              className="flex-1 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white font-bold py-3 px-6 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            >
+              <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+              <span>{loading ? 'Syncing...' : 'Sync IGDB'}</span>
+            </button>
+            <button
+              onClick={() => syncReleases('rawg')}
+              disabled={loading}
+              className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-3 px-6 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            >
+              <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+              <span>{loading ? 'Syncing...' : 'Sync RAWG'}</span>
+            </button>
+          </div>
+
+          <button
+            onClick={() => setShowPreview(true)}
+            className="w-full bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white font-semibold py-3 px-6 rounded-lg transition-all flex items-center justify-center space-x-2 border border-red-300"
+          >
+            <Eye className="w-5 h-5" />
+            <span>Preview Release Calendar</span>
+          </button>
+        </div>
 
         <div className="bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 rounded-lg p-6 mb-6">
           <h2 className="text-xl font-bold text-white mb-3">Manual Content Update</h2>

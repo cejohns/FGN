@@ -33,8 +33,6 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
   const [games, setGames] = useState<GameRelease[]>([]);
   const [selectedGame, setSelectedGame] = useState<GameRelease | null>(null);
   const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
-  const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'pc' | 'playstation' | 'xbox' | 'switch'>('all');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -66,39 +64,6 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
       console.error('Error fetching games:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const syncReleases = async (source: 'igdb' | 'rawg' | 'demo' = 'igdb') => {
-    setSyncing(true);
-    setSyncMessage(null);
-    try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-      const response = await fetch(
-        `${supabaseUrl}/functions/v1/sync-game-releases?source=${source}&days=90`,
-        {
-          headers: {
-            'Authorization': `Bearer ${supabaseKey}`,
-          },
-        }
-      );
-
-      const result = await response.json();
-
-      if (result.success) {
-        setSyncMessage(result.message);
-        await fetchGames();
-      } else {
-        setSyncMessage(`Sync failed: ${result.error}`);
-      }
-    } catch (error) {
-      console.error('Error syncing releases:', error);
-      setSyncMessage('Failed to sync releases. Please try again.');
-    } finally {
-      setSyncing(false);
-      setTimeout(() => setSyncMessage(null), 10000);
     }
   };
 
@@ -185,44 +150,12 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
       <div className="absolute inset-0 bg-gx-gradient bg-gx-grid opacity-50" />
 
       <div className="relative z-10">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-5xl font-bold text-white mb-2 font-poppins tracking-tight">
-             New Releases
-            </h1>
-            <p className="text-gray-400">Upcoming game releases you don't want to miss</p>
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              onClick={() => syncReleases('demo')}
-              disabled={syncing}
-              className="px-6 py-2.5 bg-gx-accent hover:bg-gx-accent/80 text-white font-semibold rounded-full transition-all shadow-lg shadow-gx-red hover:shadow-gx-red/70 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {syncing ? 'Loading...' : 'Load Demo Data'}
-            </button>
-            <button
-              onClick={() => syncReleases('igdb')}
-              disabled={syncing}
-              className="px-6 py-2.5 bg-gx-dark hover:bg-gx-midnight text-white font-semibold rounded-full transition-all border border-gx-accent/30 hover:border-gx-accent/50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {syncing ? 'Syncing...' : 'Sync IGDB'}
-            </button>
-            <button
-              onClick={() => syncReleases('rawg')}
-              disabled={syncing}
-              className="px-6 py-2.5 bg-gx-dark hover:bg-gx-midnight text-white font-semibold rounded-full transition-all border border-gx-accent/30 hover:border-gx-accent/50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {syncing ? 'Syncing...' : 'Sync RAWG'}
-            </button>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-5xl font-bold text-white mb-2 font-poppins tracking-tight">
+            GX Corner
+          </h1>
+          <p className="text-gray-400">Upcoming game releases you don't want to miss</p>
         </div>
-
-        {syncMessage && (
-          <div className="mb-6 p-4 bg-gx-accent/20 border border-gx-accent/50 rounded-lg text-white whitespace-pre-line">
-            {syncMessage}
-          </div>
-        )}
 
         <div className="mb-6 flex items-center gap-3">
           <Filter className="w-5 h-5 text-gx-accent" />
