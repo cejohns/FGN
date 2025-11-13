@@ -20,40 +20,143 @@ interface ContentRequest {
   count?: number;
 }
 
-async function generateWithOpenRouter(prompt: string, apiKey: string): Promise<string> {
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://firestar-gaming.com',
-      'X-Title': 'FireStar Gaming Network',
-    },
-    body: JSON.stringify({
-      model: 'google/gemini-2.0-flash-exp:free',
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      temperature: 0.8,
-      max_tokens: 1500,
-    }),
-  });
+interface OpenRouterResponse {
+  success: boolean;
+  content?: string;
+  error?: string;
+  usedFallback?: boolean;
+  warning?: string;
+}
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`OpenRouter API error (${response.status}): ${response.statusText}. Details: ${errorText}`);
+const SYSTEM_PROMPT = `You are an expert SEO gaming journalist writing for FireStar Gaming Network. Your content is engaging, well-researched, and optimized for search engines. You write in a professional yet accessible style, providing valuable insights to gaming enthusiasts. Always respond with valid JSON in the exact format requested.`;
+
+async function generateWithOpenRouter(
+  userPrompt: string,
+  apiKey: string,
+  primaryModel: string = 'meta-llama/llama-3.3-70b-instruct',
+  fallbackModel: string = 'meta-llama/llama-3.1-8b-instruct:free'
+): Promise<OpenRouterResponse> {
+  try {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://firestar-gaming.com',
+        'X-Title': 'FireStar Gaming Network',
+      },
+      body: JSON.stringify({
+        model: primaryModel,
+        messages: [
+          {
+            role: 'system',
+            content: SYSTEM_PROMPT,
+          },
+          {
+            role: 'user',
+            content: userPrompt,
+          },
+        ],
+        temperature: 0.8,
+        max_tokens: 2000,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+
+      if (response.status === 429) {
+        console.log('Primary model rate-limited, attempting fallback...');
+        return await retryWithFallback(userPrompt, apiKey, fallbackModel);
+      }
+
+      return {
+        success: false,
+        error: `OpenRouter API error (${response.status}): ${response.statusText}. Details: ${errorText}`,
+      };
+    }
+
+    const data = await response.json();
+
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      return {
+        success: false,
+        error: 'Invalid response format from OpenRouter API',
+      };
+    }
+
+    return {
+      success: true,
+      content: data.choices[0].message.content,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+    };
   }
+}
 
-  const data = await response.json();
+async function retryWithFallback(
+  userPrompt: string,
+  apiKey: string,
+  fallbackModel: string
+): Promise<OpenRouterResponse> {
+  try {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://firestar-gaming.com',
+        'X-Title': 'FireStar Gaming Network',
+      },
+      body: JSON.stringify({
+        model: fallbackModel,
+        messages: [
+          {
+            role: 'system',
+            content: SYSTEM_PROMPT,
+          },
+          {
+            role: 'user',
+            content: userPrompt,
+          },
+        ],
+        temperature: 0.8,
+        max_tokens: 2000,
+      }),
+    });
 
-  if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-    throw new Error('Invalid response format from OpenRouter API');
+    if (!response.ok) {
+      const errorText = await response.text();
+      return {
+        success: false,
+        error: `Fallback model also failed (${response.status}): ${response.statusText}. Details: ${errorText}`,
+      };
+    }
+
+    const data = await response.json();
+
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      return {
+        success: false,
+        error: 'Invalid response format from fallback model',
+      };
+    }
+
+    return {
+      success: true,
+      content: data.choices[0].message.content,
+      usedFallback: true,
+      warning: 'Primary model rate-limited, fallback used.',
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: `Fallback failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    };
   }
-
-  return data.choices[0].message.content;
 }
 
 function parseJsonResponse(text: string): any {
@@ -182,7 +285,17 @@ Be descriptive and engaging.`;
         }
 
         const aiResponse = await generateWithOpenRouter(prompt, openRouterKey);
-        content = parseJsonResponse(aiResponse);
+
+        if (!aiResponse.success) {
+          results.errors.push(`Generation error: ${aiResponse.error}`);
+          continue;
+        }
+
+        if (aiResponse.warning) {
+          results.errors.push(aiResponse.warning);
+        }
+
+        content = parseJsonResponse(aiResponse.content!);
 
         let insertResult;
         switch (type) {
