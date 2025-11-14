@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Header from './components/Header';
+import FgnHeader from './components/FgnHeader';
 import Footer from './components/Footer';
 import HomePage from './components/HomePage';
 import NewsPage from './components/NewsPage';
@@ -34,8 +34,8 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex flex-col">
-      <Header currentSection={currentSection} onNavigate={handleNavigate} />
+    <div className="min-h-screen bg-fs-dark text-fs-text flex flex-col">
+      <FgnHeader currentSection={currentSection} onNavigate={handleNavigate} />
 
       <main className="flex-grow container mx-auto px-4 py-8">
         {currentSection === 'home' && <HomePage onNavigate={handleNavigate} />}

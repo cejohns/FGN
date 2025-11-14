@@ -4,6 +4,18 @@ export default {
   theme: {
     extend: {
       colors: {
+        fs: {
+          dark: '#0A0A0B',
+          panel: '#1A1A1F',
+          text: '#FFFFFF',
+          muted: '#A7A9AC',
+          blue: '#2DB8FF',
+          blueStrong: '#0096F0',
+          blueGlow: '#7BE8FF',
+          silverLight: '#E6E7E8',
+          silverMid: '#A7A9AC',
+          silverDark: '#7E7F84',
+        },
         'gx-dark': '#0a0b14',
         'gx-midnight': '#13141f',
         'gx-accent': '#ff3c41',

@@ -44,31 +44,73 @@ export default function HomePage({ onNavigate }: HomePageProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-cyan-500 border-t-transparent"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-fs-blue border-t-transparent"></div>
       </div>
     );
   }
 
   return (
     <div className="space-y-12">
-      <section className="bg-gradient-to-r from-slate-800 to-slate-900 text-white py-20 -mt-6 -mx-4 px-4">
-        <div className="container mx-auto max-w-6xl text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-            Welcome to FireStar Gaming Network
-          </h1>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            Your ultimate destination for gaming news, reviews, videos, and community content
-          </p>
+      <section className="bg-fs-dark py-12 -mt-6 -mx-4 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <h1 className="text-3xl md:text-5xl font-extrabold mb-4">
+                <span className="bg-gradient-to-b from-fs-silverLight via-fs-silverMid to-fs-silverDark bg-clip-text text-transparent">
+                  Dragon-Powered Gaming Coverage
+                </span>
+              </h1>
+              <p className="text-fs-muted mb-6 text-lg leading-relaxed">
+                FireStar Gaming Network brings you news, honest reviews, dev-focused tutorials,
+                and cinematic playthroughs—all wrapped in a high-energy esports vibe.
+              </p>
+
+              <div className="flex flex-wrap gap-3 mb-6">
+                <button
+                  onClick={() => onNavigate('news')}
+                  className="px-6 py-3 rounded-full bg-fs-blue text-fs-dark font-semibold hover:bg-fs-blueStrong transition-colors"
+                >
+                  Read Latest News
+                </button>
+                <button
+                  onClick={() => onNavigate('reviews')}
+                  className="px-6 py-3 rounded-full border border-fs-blue text-fs-blue hover:bg-fs-panel transition-colors"
+                >
+                  Browse Reviews
+                </button>
+              </div>
+
+              <div className="text-xs uppercase tracking-wide text-fs-muted">
+                Updated regularly • Indie & AAA • Esports & dev culture
+              </div>
+            </div>
+
+            <div className="flex justify-center md:justify-end">
+              <div className="relative">
+                <div
+                  className="absolute -inset-4 rounded-full blur-3xl opacity-40"
+                  style={{
+                    background: 'radial-gradient(circle, #7BE8FF 0%, transparent 70%)',
+                  }}
+                />
+                <img
+                  src="/NewFSELogo.png"
+                  alt="FireStar Dragon Logo"
+                  className="relative h-48 md:h-64 w-auto drop-shadow-2xl"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       {featuredNews.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-bold text-white">Featured News</h2>
+            <h2 className="text-3xl font-bold text-fs-text">Featured News</h2>
             <button
               onClick={() => onNavigate('news')}
-              className="text-cyan-600 hover:text-cyan-700 font-medium transition-colors"
+              className="text-fs-blue hover:text-fs-blueStrong font-medium transition-colors"
             >
               View All →
             </button>
@@ -78,7 +120,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
               <button
                 key={article.id}
                 onClick={() => onNavigate('news', article.id)}
-                className="group bg-slate-950 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 text-left"
+                className="group bg-fs-panel rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 text-left border border-fs-dark hover:border-fs-blue"
               >
                 <div className="aspect-video overflow-hidden">
                   <img
@@ -88,12 +130,12 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                   />
                 </div>
                 <div className="p-5">
-                  <span className="text-xs font-semibold text-cyan-600 uppercase tracking-wide">{article.category}</span>
-                  <h3 className="text-xl font-bold text-white mt-2 mb-2 group-hover:text-cyan-600 transition-colors line-clamp-2">
+                  <span className="text-xs font-semibold text-fs-blue uppercase tracking-wide">{article.category}</span>
+                  <h3 className="text-xl font-bold text-fs-text mt-2 mb-2 group-hover:text-fs-blue transition-colors line-clamp-2">
                     {article.title}
                   </h3>
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">{article.excerpt}</p>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
+                  <p className="text-fs-muted text-sm mb-3 line-clamp-2">{article.excerpt}</p>
+                  <div className="flex items-center justify-between text-xs text-fs-silverDark">
                     <div className="flex items-center space-x-3">
                       <span className="flex items-center">
                         <Clock className="w-3 h-3 mr-1" />
@@ -116,10 +158,10 @@ export default function HomePage({ onNavigate }: HomePageProps) {
       {featuredReviews.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-bold text-white">Top Reviews</h2>
+            <h2 className="text-3xl font-bold text-fs-text">Top Reviews</h2>
             <button
               onClick={() => onNavigate('reviews')}
-              className="text-cyan-600 hover:text-cyan-700 font-medium transition-colors"
+              className="text-fs-blue hover:text-fs-blueStrong font-medium transition-colors"
             >
               View All →
             </button>
@@ -129,7 +171,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
               <button
                 key={review.id}
                 onClick={() => onNavigate('reviews', review.id)}
-                className="group bg-slate-950 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 text-left"
+                className="group bg-fs-panel rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 text-left border border-fs-dark hover:border-fs-blue"
               >
                 <div className="aspect-[3/4] overflow-hidden relative">
                   <img
@@ -137,18 +179,18 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                     alt={review.game_title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
-                  <div className="absolute top-3 right-3 bg-cyan-600 text-white px-3 py-1 rounded-full flex items-center space-x-1 font-bold">
+                  <div className="absolute top-3 right-3 bg-fs-blue text-fs-dark px-3 py-1 rounded-full flex items-center space-x-1 font-bold">
                     <Star className="w-4 h-4 fill-current" />
                     <span>{review.rating}</span>
                   </div>
                 </div>
                 <div className="p-5">
-                  <span className="text-xs font-semibold text-cyan-600 uppercase tracking-wide">{review.genre}</span>
-                  <h3 className="text-xl font-bold text-white mt-2 mb-2 group-hover:text-cyan-600 transition-colors line-clamp-2">
+                  <span className="text-xs font-semibold text-fs-blue uppercase tracking-wide">{review.genre}</span>
+                  <h3 className="text-xl font-bold text-fs-text mt-2 mb-2 group-hover:text-fs-blue transition-colors line-clamp-2">
                     {review.game_title}
                   </h3>
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">{review.excerpt}</p>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
+                  <p className="text-fs-muted text-sm mb-3 line-clamp-2">{review.excerpt}</p>
+                  <div className="flex items-center justify-between text-xs text-fs-silverDark">
                     <span>{review.platform}</span>
                     <span className="font-medium">{review.reviewer}</span>
                   </div>
@@ -162,10 +204,10 @@ export default function HomePage({ onNavigate }: HomePageProps) {
       {featuredVideos.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-bold text-white">Featured Videos</h2>
+            <h2 className="text-3xl font-bold text-fs-text">Featured Videos</h2>
             <button
               onClick={() => onNavigate('videos')}
-              className="text-cyan-600 hover:text-cyan-700 font-medium transition-colors"
+              className="text-fs-blue hover:text-fs-blueStrong font-medium transition-colors"
             >
               View All →
             </button>
@@ -175,7 +217,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
               <button
                 key={video.id}
                 onClick={() => onNavigate('videos', video.id)}
-                className="group bg-slate-950 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 text-left"
+                className="group bg-fs-panel rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 text-left border border-fs-dark hover:border-fs-blue"
               >
                 <div className="aspect-video overflow-hidden relative">
                   <img
@@ -184,8 +226,8 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center">
-                    <div className="w-16 h-16 bg-cyan-600 rounded-full flex items-center justify-center transform scale-0 group-hover:scale-100 transition-transform">
-                      <Play className="w-8 h-8 text-white fill-current ml-1" />
+                    <div className="w-16 h-16 bg-fs-blue rounded-full flex items-center justify-center transform scale-0 group-hover:scale-100 transition-transform">
+                      <Play className="w-8 h-8 text-fs-dark fill-current ml-1" />
                     </div>
                   </div>
                   {video.duration && (
@@ -195,11 +237,11 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                   )}
                 </div>
                 <div className="p-5">
-                  <span className="text-xs font-semibold text-cyan-600 uppercase tracking-wide">{video.category}</span>
-                  <h3 className="text-xl font-bold text-white mt-2 mb-2 group-hover:text-cyan-600 transition-colors line-clamp-2">
+                  <span className="text-xs font-semibold text-fs-blue uppercase tracking-wide">{video.category}</span>
+                  <h3 className="text-xl font-bold text-fs-text mt-2 mb-2 group-hover:text-fs-blue transition-colors line-clamp-2">
                     {video.title}
                   </h3>
-                  <div className="flex items-center justify-between text-xs text-gray-500 mt-3">
+                  <div className="flex items-center justify-between text-xs text-fs-silverDark mt-3">
                     <span className="font-medium">{video.creator}</span>
                     <span className="flex items-center">
                       <Eye className="w-3 h-3 mr-1" />
@@ -216,10 +258,10 @@ export default function HomePage({ onNavigate }: HomePageProps) {
       {latestBlogs.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-bold text-white">Latest from the Blog</h2>
+            <h2 className="text-3xl font-bold text-fs-text">Latest from the Blog</h2>
             <button
               onClick={() => onNavigate('blog')}
-              className="text-cyan-600 hover:text-cyan-700 font-medium transition-colors"
+              className="text-fs-blue hover:text-fs-blueStrong font-medium transition-colors"
             >
               View All →
             </button>
@@ -229,7 +271,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
               <button
                 key={post.id}
                 onClick={() => onNavigate('blog', post.id)}
-                className="group bg-slate-950 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 text-left"
+                className="group bg-fs-panel rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 text-left border border-fs-dark hover:border-fs-blue"
               >
                 <div className="aspect-video overflow-hidden">
                   <img
@@ -240,18 +282,18 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                 </div>
                 <div className="p-5">
                   <div className="flex items-center space-x-2 mb-2">
-                    <BookOpen className="w-4 h-4 text-cyan-600" />
-                    <span className="text-xs font-semibold text-cyan-600 uppercase tracking-wide">
+                    <BookOpen className="w-4 h-4 text-fs-blue" />
+                    <span className="text-xs font-semibold text-fs-blue uppercase tracking-wide">
                       {post.post_type === 'vlog' ? 'Vlog' : 'Blog'}
                     </span>
-                    <span className="text-xs text-gray-400">•</span>
-                    <span className="text-xs text-gray-500">{post.category}</span>
+                    <span className="text-xs text-fs-muted">•</span>
+                    <span className="text-xs text-fs-silverDark">{post.category}</span>
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-2 group-hover:text-cyan-600 transition-colors line-clamp-2">
+                  <h3 className="text-xl font-bold text-fs-text mb-2 group-hover:text-fs-blue transition-colors line-clamp-2">
                     {post.title}
                   </h3>
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">{post.excerpt}</p>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
+                  <p className="text-fs-muted text-sm mb-3 line-clamp-2">{post.excerpt}</p>
+                  <div className="flex items-center justify-between text-xs text-fs-silverDark">
                     <span className="font-medium">{post.author}</span>
                     <span>{formatDate(post.published_at)}</span>
                   </div>
