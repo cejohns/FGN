@@ -19,7 +19,7 @@ export default function FgnHeader({ currentSection, onNavigate }: FgnHeaderProps
           className="flex items-center gap-3 hover:opacity-90 transition-opacity"
         >
           <img
-            src="/NewFSELogo.png"
+            src="/FGNLogo.png"
             alt="FireStar Gaming Network"
             className="h-12 w-auto"
           />

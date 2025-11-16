@@ -94,7 +94,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                   }}
                 />
                 <img
-                  src="/NewFSELogo.png"
+                  src="/FGNLogo.png"
                   alt="FireStar Dragon Logo"
                   className="relative h-48 md:h-64 w-auto drop-shadow-2xl"
                 />
