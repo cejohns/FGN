@@ -53,6 +53,16 @@ export default function FgnHeader({ currentSection, onNavigate }: FgnHeaderProps
           >
             Join the Network
           </button>
+          <button
+            onClick={() => onNavigate('admin')}
+            className={`transition-colors ${
+              currentSection === 'admin'
+                ? 'text-fs-blue font-medium'
+                : 'text-fs-muted hover:text-fs-blue'
+            }`}
+          >
+            Admin
+          </button>
         </nav>
 
         <button
@@ -104,6 +114,19 @@ export default function FgnHeader({ currentSection, onNavigate }: FgnHeaderProps
             className="px-4 py-2 rounded-full bg-fs-blue text-fs-dark font-medium hover:bg-fs-blueStrong transition-colors text-center"
           >
             Join the Network
+          </button>
+          <button
+            onClick={() => {
+              onNavigate('admin');
+              document.getElementById('mobile-nav')?.classList.add('hidden');
+            }}
+            className={`text-left transition-colors ${
+              currentSection === 'admin'
+                ? 'text-fs-blue font-medium'
+                : 'text-fs-muted hover:text-fs-blue'
+            }`}
+          >
+            Admin
           </button>
         </nav>
       </div>
