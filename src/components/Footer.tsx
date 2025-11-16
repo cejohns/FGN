@@ -1,6 +1,10 @@
 import { Twitter, Youtube, Twitch, Instagram } from 'lucide-react';
 
-export default function Footer() {
+interface FooterProps {
+  onNavigate?: (section: string) => void;
+}
+
+export default function Footer({ onNavigate }: FooterProps) {
   return (
     <footer className="bg-black border-t border-cyan-500/20 text-white mt-20">
       <div className="container mx-auto px-4 py-12">
@@ -69,7 +73,18 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-cyan-500/20 mt-8 pt-8 text-center text-gray-400 text-sm">
-          <p>&copy; {new Date().getFullYear()} FireStar Gaming Network. All rights reserved.</p>
+          <p>
+            &copy; {new Date().getFullYear()} FireStar Gaming Network. All rights reserved.
+            {onNavigate && (
+              <span
+                onClick={() => onNavigate('admin')}
+                className="opacity-0 hover:opacity-100 cursor-pointer ml-2"
+                title="Admin Access"
+              >
+                •
+              </span>
+            )}
+          </p>
         </div>
       </div>
     </footer>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import FgnHeader from './components/FgnHeader';
 import Footer from './components/Footer';
 import HomePage from './components/HomePage';
@@ -18,6 +18,19 @@ function App() {
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => {
     return sessionStorage.getItem('adminAuth') === 'true';
   });
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+        e.preventDefault();
+        setCurrentSection('admin');
+        window.scrollTo(0, 0);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
 
   const handleNavigate = (section: string, itemId?: string) => {
     setCurrentSection(section);
@@ -51,7 +64,7 @@ function App() {
         )}
       </main>
 
-      <Footer />
+      <Footer onNavigate={handleNavigate} />
     </div>
   );
 }
