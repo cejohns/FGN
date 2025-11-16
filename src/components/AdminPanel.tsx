@@ -229,6 +229,36 @@ export default function AdminPanel() {
     }
   };
 
+  const syncPlatformNews = async () => {
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-platform-news`;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to sync platform news');
+      }
+
+      setResult(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const generateMixedContent = async () => {
     setLoading(true);
     setError(null);
@@ -389,6 +419,39 @@ export default function AdminPanel() {
           >
             <Eye className="w-5 h-5" />
             <span>Preview Release Calendar</span>
+          </button>
+        </div>
+
+        <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-lg p-6 mb-6">
+          <h2 className="text-xl font-bold text-white mb-3">Sync Platform News (RSS)</h2>
+          <p className="text-gray-700 mb-4">
+            Import official news from PlayStation, Xbox, and Nintendo directly from their RSS feeds.
+            Creates unified news posts with automatic deduplication.
+          </p>
+
+          <div className="bg-slate-950 rounded-lg p-4 mb-4 border border-indigo-200">
+            <h3 className="font-semibold text-white mb-2">Platform Sources:</h3>
+            <ul className="text-sm text-gray-700 space-y-1 mb-3">
+              <li>• <strong>PlayStation</strong> - blog.playstation.com</li>
+              <li>• <strong>Xbox</strong> - news.xbox.com</li>
+              <li>• <strong>Nintendo</strong> - Configured via NINTENDO_FEED_URL env variable</li>
+            </ul>
+            <h3 className="font-semibold text-white mb-2">Features:</h3>
+            <ul className="text-sm text-gray-700 space-y-1">
+              <li>• Automatic classification (game updates vs announcements)</li>
+              <li>• Deduplication by source URL</li>
+              <li>• Extracts images, excerpts, and full content</li>
+              <li>• Stores in unified news_posts table</li>
+            </ul>
+          </div>
+
+          <button
+            onClick={syncPlatformNews}
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+          >
+            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+            <span>{loading ? 'Syncing Platform News...' : 'Sync Platform News'}</span>
           </button>
         </div>
 
@@ -568,14 +631,33 @@ export default function AdminPanel() {
 
             <div className="bg-slate-950 rounded-lg p-4 border border-green-200">
               <h4 className="font-semibold text-white mb-3">
-                {result.inserted !== undefined && result.updated !== undefined ? 'Releases Synced:' :
+                {result.imported !== undefined ? 'Platform News Synced:' :
+                 result.inserted !== undefined && result.updated !== undefined ? 'Releases Synced:' :
                  result.created !== undefined && result.items !== undefined ? 'AI Content Generated:' :
                  result.clips_added !== undefined ? 'Videos Fetched:' :
                  result.reviews_added !== undefined && result.news_added !== undefined ? 'Content Fetched:' :
                  result.results?.news_articles !== undefined ? 'Content Added:' :
                  result.results?.reviews_updated !== undefined ? 'Images Updated:' : 'Success!'}
               </h4>
-              {result.inserted !== undefined && result.updated !== undefined ? (
+              {result.imported !== undefined ? (
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-blue-900">{result.imported.playstation.inserted}</div>
+                    <div className="text-xs text-blue-700 font-medium">PlayStation</div>
+                    <div className="text-xs text-gray-600 mt-1">{result.imported.playstation.skipped} skipped</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-green-900">{result.imported.xbox.inserted}</div>
+                    <div className="text-xs text-green-700 font-medium">Xbox</div>
+                    <div className="text-xs text-gray-600 mt-1">{result.imported.xbox.skipped} skipped</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-red-900">{result.imported.nintendo.inserted}</div>
+                    <div className="text-xs text-red-700 font-medium">Nintendo</div>
+                    <div className="text-xs text-gray-600 mt-1">{result.imported.nintendo.skipped} skipped</div>
+                  </div>
+                </div>
+              ) : result.inserted !== undefined && result.updated !== undefined ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
                   <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-3">
                     <div className="text-2xl font-bold text-red-900">{result.inserted}</div>
