@@ -1,107 +1,125 @@
-import { Menu, X } from 'lucide-react';
-import { useState } from 'react';
-
-interface HeaderProps {
+interface FgnHeaderProps {
   currentSection: string;
   onNavigate: (section: string) => void;
 }
 
-export default function Header({ currentSection, onNavigate }: HeaderProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+export default function FgnHeader({ currentSection, onNavigate }: FgnHeaderProps) {
   const navItems = [
-    { id: 'home', label: 'Home' },
-    { id: 'news', label: 'News' },
-    { id: 'reviews', label: 'Reviews' },
-    { id: 'releases', label: 'Releases' },
-    { id: 'guides', label: 'Guides' },
-    { id: 'blog', label: 'Blog' },
-    { id: 'videos', label: 'Videos' },
-    { id: 'gallery', label: 'Gallery' },
+    { id: "home", label: "Home" },
+    { id: "news", label: "News" },
+    { id: "reviews", label: "Reviews" },
+    { id: "releases", label: "Releases" },
+    { id: "guides", label: "Guides" },
+    { id: "blog", label: "Blog" },
+    { id: "videos", label: "Videos" },
+    { id: "gallery", label: "Gallery" }
   ];
 
   return (
-    <header className="bg-black text-white shadow-lg sticky top-0 z-50 border-b border-cyan-500/20">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+    <header className="bg-fs-dark border-b border-fs-panel sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center">
+        
+        {/* LEFT SIDE — Logo + Blue Button */}
+        <div className="flex items-center gap-6">
           <button
-            onClick={() => onNavigate('home')}
-            className="flex items-center space-x-2 group"
+            onClick={() => onNavigate("home")}
+            className="flex items-center gap-3 hover:opacity-90 transition-opacity"
           >
-            <img
-              src="/NewFSELogo.png"
-              alt="FireStar Gaming Entertainment"
-              className="h-12 w-auto group-hover:scale-105 transition-transform"
-            />
+            <img src="/FGNLogo.png" alt="FireStar Gaming Network" className="h-12 w-auto" />
+
+            <div className="leading-tight">
+              <div className="text-lg font-semibold tracking-wide bg-gradient-to-b 
+                from-fs-silverLight via-fs-silverMid to-fs-silverDark 
+                bg-clip-text text-transparent"
+              >
+                FireStar Gaming Network
+              </div>
+
+              <div className="text-xs uppercase text-fs-blue tracking-wider">
+                Gaming • News • Reviews • Tutorials • Playthroughs
+              </div>
+            </div>
           </button>
 
-          <nav className="hidden md:flex items-center space-x-1">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => onNavigate(item.id)}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  currentSection === item.id
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/50'
-                    : 'text-gray-300 hover:bg-slate-800 hover:text-cyan-400'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-            <button
-              onClick={() => onNavigate('admin')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                currentSection === 'admin'
-                  ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/50'
-                  : 'text-gray-300 hover:bg-slate-800 hover:text-red-400'
-              }`}
-            >
-              Admin
-            </button>
-          </nav>
-
+          {/* Blue CTA on the left (KEEP THIS HERE) */}
           <button
-            className="md:hidden p-2 hover:bg-slate-800 rounded-lg transition-colors"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            onClick={() => onNavigate("releases")}
+            className="hidden sm:inline-flex px-4 py-1.5 rounded-full bg-fs-blue 
+              text-fs-dark font-medium hover:bg-fs-blueStrong transition-colors"
           >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            Join the Network
           </button>
         </div>
 
-        {mobileMenuOpen && (
-          <nav className="md:hidden py-4 border-t border-cyan-500/20">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  onNavigate(item.id);
-                  setMobileMenuOpen(false);
-                }}
-                className={`block w-full text-left px-4 py-3 rounded-lg font-medium transition-all ${
-                  currentSection === item.id
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/50'
-                    : 'text-gray-300 hover:bg-slate-800 hover:text-cyan-400'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
+        {/* RIGHT SIDE — MAIN NAV LINKS */}
+        <nav className="ml-auto hidden md:flex items-center gap-6 text-sm">
+          {navItems.map((item) => (
             <button
-              onClick={() => {
-                onNavigate('admin');
-                setMobileMenuOpen(false);
-              }}
-              className={`block w-full text-left px-4 py-3 rounded-lg font-medium transition-all ${
-                currentSection === 'admin'
-                  ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg shadow-red-500/50'
-                  : 'text-gray-300 hover:bg-slate-800 hover:text-red-400'
+              key={item.id}
+              onClick={() => onNavigate(item.id)}
+              className={`transition-colors ${
+                currentSection === item.id
+                  ? "text-fs-blue font-medium"
+                  : "text-fs-muted hover:text-fs-blue"
               }`}
             >
-              Admin
+              {item.label}
             </button>
-          </nav>
-        )}
+          ))}
+        </nav>
+
+        {/* Mobile menu button */}
+        <button
+          onClick={() => {
+            const nav = document.getElementById("mobile-nav");
+            nav?.classList.toggle("hidden");
+          }}
+          className="md:hidden ml-auto text-fs-muted hover:text-fs-blue"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        </button>
+      </div>
+
+      {/* Mobile Drawer */}
+      <div
+        id="mobile-nav"
+        className="hidden md:hidden bg-fs-panel px-4 py-3 border-t border-fs-dark"
+      >
+        <nav className="flex flex-col gap-3 text-sm">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                onNavigate(item.id);
+                document.getElementById("mobile-nav")?.classList.add("hidden");
+              }}
+              className={`text-left transition-colors ${
+                currentSection === item.id
+                  ? "text-fs-blue font-medium"
+                  : "text-fs-muted hover:text-fs-blue"
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+
+          <button
+            onClick={() => {
+              onNavigate("releases");
+              document.getElementById("mobile-nav")?.classList.add("hidden");
+            }}
+            className="px-4 py-2 rounded-full bg-fs-blue text-fs-dark font-medium hover:bg-fs-blueStrong transition-colors mt-1 text-center"
+          >
+            Join the Network
+          </button>
+        </nav>
       </div>
     </header>
   );
