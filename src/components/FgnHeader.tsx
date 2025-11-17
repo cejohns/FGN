@@ -18,30 +18,21 @@ export default function FgnHeader({ currentSection, onNavigate }: FgnHeaderProps
   return (
     <header className="bg-fs-dark border-b border-fs-panel sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        {/* LEFT SIDE — Logo + Blue Button */}
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => onNavigate('home')}
-            className="flex items-center gap-3 hover:opacity-90 transition-opacity"
-          >
-            <img src="/FGNLogo.png" alt="FireStar Gaming Network" className="h-12 w-auto" />
-            <div className="leading-tight hidden lg:block">
-              <div className="text-lg font-semibold tracking-wide bg-gradient-to-b from-fs-silverLight via-fs-silverMid to-fs-silverDark bg-clip-text text-transparent">
-                FireStar Gaming Network
-              </div>
-              <div className="text-xs uppercase text-fs-blue tracking-wider">
-                Gaming • News • Reviews • Tutorials • Playthroughs
-              </div>
+        {/* LEFT SIDE — Logo */}
+        <button
+          onClick={() => onNavigate('home')}
+          className="flex items-center gap-3 hover:opacity-90 transition-opacity"
+        >
+          <img src="/FGNLogo.png" alt="FireStar Gaming Network" className="h-12 w-auto" />
+          <div className="leading-tight hidden lg:block">
+            <div className="text-lg font-semibold tracking-wide bg-gradient-to-b from-fs-silverLight via-fs-silverMid to-fs-silverDark bg-clip-text text-transparent">
+              FireStar Gaming Network
             </div>
-          </button>
-
-          <button
-            onClick={() => onNavigate('releases')}
-            className="hidden sm:inline-flex px-4 py-1.5 rounded-full bg-fs-blue text-fs-dark font-medium hover:bg-fs-blueStrong transition-colors"
-          >
-            Join the Network
-          </button>
-        </div>
+            <div className="text-xs uppercase text-fs-blue tracking-wider">
+              Gaming • News • Reviews • Tutorials • Playthroughs
+            </div>
+          </div>
+        </button>
 
         {/* RIGHT SIDE — MAIN NAV LINKS */}
         <nav className="hidden md:flex items-center gap-6 text-sm">
@@ -101,16 +92,6 @@ export default function FgnHeader({ currentSection, onNavigate }: FgnHeaderProps
               {item.label}
             </button>
           ))}
-
-          <button
-            onClick={() => {
-              onNavigate('releases');
-              document.getElementById('mobile-nav')?.classList.remove('mobile-nav-open');
-            }}
-            className="px-4 py-2 rounded-full bg-fs-blue text-fs-dark font-medium hover:bg-fs-blueStrong transition-colors mt-1 text-center"
-          >
-            Join the Network
-          </button>
         </nav>
       </div>
     </header>
