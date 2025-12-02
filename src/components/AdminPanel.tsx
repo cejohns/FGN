@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RefreshCw, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Eye, FileText } from 'lucide-react';
+import { RefreshCw, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Eye, FileText, Clock } from 'lucide-react';
 import { NewsArticleForm, GameReviewForm, VideoForm, GalleryImageForm, BlogPostForm, GuideForm } from './ContentForms';
 import ReleaseCalendarPage from './ReleaseCalendarPage';
 import DraftPreview from './DraftPreview';
@@ -415,6 +415,17 @@ export default function AdminPanel() {
             <p className="text-xs text-gray-600 mt-3">
               Demo data includes 8 curated upcoming games. IGDB/RAWG sync requires API credentials.
             </p>
+          </div>
+
+          <div className="bg-green-50 border border-green-300 rounded-lg p-4 mb-4 flex items-start gap-3">
+            <Clock className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm">
+              <p className="font-semibold text-green-800 mb-1">Automated Daily Sync Active</p>
+              <p className="text-green-700">
+                Game releases automatically sync every day at <strong>3:00 AM UTC</strong> (11:00 PM EST / 8:00 PM PST).
+                Manual sync buttons below are for immediate updates.
+              </p>
+            </div>
           </div>
 
           <div className="flex gap-3 mb-4">
