@@ -11,13 +11,12 @@ import GuidesPage from './components/GuidesPage';
 import ReleaseCalendarPage from './components/ReleaseCalendarPage';
 import AdminLogin from './components/AdminLogin';
 import AdminPanel from './components/AdminPanel';
+import { useAuth } from './lib/auth';
 
 function App() {
   const [currentSection, setCurrentSection] = useState('home');
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>(undefined);
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => {
-    return sessionStorage.getItem('adminAuth') === 'true';
-  });
+  const { isAdmin, loading } = useAuth();
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -42,9 +41,16 @@ function App() {
     setSelectedItemId(undefined);
   };
 
-  const handleAdminLogin = () => {
-    setIsAdminAuthenticated(true);
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-fs-dark text-fs-text flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-fs-dark text-fs-text flex flex-col">
@@ -60,7 +66,7 @@ function App() {
         {currentSection === 'blog' && <BlogPage selectedPostId={selectedItemId} onBack={handleBack} />}
         {currentSection === 'guides' && <GuidesPage />}
         {currentSection === 'admin' && (
-          isAdminAuthenticated ? <AdminPanel /> : <AdminLogin onLogin={handleAdminLogin} />
+          isAdmin ? <AdminPanel /> : <AdminLogin />
         )}
       </main>
 

@@ -1,32 +1,23 @@
 import { useState } from 'react';
 import { Lock, AlertCircle } from 'lucide-react';
+import { useAuth } from '../lib/auth';
 
-interface AdminLoginProps {
-  onLogin: () => void;
-}
-
-export default function AdminLogin({ onLogin }: AdminLoginProps) {
+export default function AdminLogin() {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { signIn, loading } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
 
-    const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'admin123';
+    const { error: signInError } = await signIn(email, password);
 
-    setTimeout(() => {
-      if (password === adminPassword) {
-        sessionStorage.setItem('adminAuth', 'true');
-        onLogin();
-      } else {
-        setError('Invalid password. Please try again.');
-        setPassword('');
-      }
-      setLoading(false);
-    }, 500);
+    if (signInError) {
+      setError(signInError.message || 'Invalid email or password. Please try again.');
+      setPassword('');
+    }
   };
 
   return (
@@ -39,9 +30,26 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
         </div>
 
         <h2 className="text-2xl font-bold text-white text-center mb-2">Admin Access</h2>
-        <p className="text-gray-400 text-center mb-6">Enter your password to continue</p>
+        <p className="text-gray-400 text-center mb-6">Sign in with your admin credentials</p>
 
         <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+              Email Address
+            </label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 bg-slate-900 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+              placeholder="admin@example.com"
+              disabled={loading}
+              autoFocus
+              required
+            />
+          </div>
+
           <div className="mb-4">
             <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
               Password
@@ -52,9 +60,9 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 bg-slate-900 border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
-              placeholder="Enter admin password"
+              placeholder="Enter your password"
               disabled={loading}
-              autoFocus
+              required
             />
           </div>
 
@@ -67,16 +75,16 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
 
           <button
             type="submit"
-            disabled={loading || !password}
+            disabled={loading || !email || !password}
             className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg shadow-cyan-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Verifying...' : 'Login'}
+            {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
         <div className="mt-6 p-4 bg-slate-900 rounded-lg border border-slate-700">
           <p className="text-xs text-gray-400">
-            <strong>Note:</strong> To set a custom password, add <code className="bg-slate-800 px-1 rounded">VITE_ADMIN_PASSWORD</code> to your .env file.
+            <strong>Secure Authentication:</strong> This admin panel uses Supabase Auth with encrypted password storage and JWT tokens.
           </p>
         </div>
       </div>
