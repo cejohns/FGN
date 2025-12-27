@@ -1,40 +1,34 @@
 # Admin Setup Guide
 
-Your project now uses secure Supabase Auth for admin authentication. Follow these steps to create your first admin user.
+Your project now uses secure Supabase Auth for admin authentication. Follow these simple steps to create your first admin user.
 
 ## Creating Your First Admin User
 
-### Step 1: Create Auth User in Supabase Dashboard
+### Step 1: Open Supabase SQL Editor
 
-1. Go to your Supabase dashboard
-2. Navigate to **Authentication** > **Users**
-3. Click **Add user** > **Create new user**
-4. Enter:
-   - Email: your admin email
-   - Password: a secure password
-   - User metadata (optional): `{"full_name": "Your Name"}`
-5. Click **Create user**
+1. Go to your Supabase project dashboard at https://supabase.com/dashboard
+2. Select your project
+3. Click **SQL Editor** in the left sidebar (it looks like `</>`)
+4. Click **New query**
 
-### Step 2: Add User to Admin Table
+### Step 2: Run the Setup Script
 
-1. In your Supabase dashboard, go to **SQL Editor**
-2. Run this SQL query (replace with your admin email):
-
-```sql
-INSERT INTO admin_users (id, email, full_name, role)
-SELECT
-  id,
-  email,
-  COALESCE(raw_user_meta_data->>'full_name', 'Admin User') as full_name,
-  'super_admin' as role
-FROM auth.users
-WHERE email = 'your-email@example.com';
-```
+1. Open the file `CREATE_FIRST_ADMIN.sql` from your project
+2. **Edit these three lines** with your information:
+   ```sql
+   user_email text := 'admin@example.com';  -- Your email
+   user_password text := 'YourSecurePassword123!';  -- Your password
+   user_full_name text := 'Admin User';  -- Your name
+   ```
+3. Copy the entire SQL script
+4. Paste it into the Supabase SQL Editor
+5. Click **Run** (or press `Ctrl+Enter`)
+6. You should see "Success" with a message that your admin was created
 
 ### Step 3: Log In
 
-1. Press `Ctrl+Shift+A` in your app to open the admin panel
-2. Sign in with your email and password
+1. In your app, press `Ctrl+Shift+A` to open the admin panel
+2. Sign in with the email and password you just created
 3. You're now logged in as a super admin
 
 ## Admin Roles
