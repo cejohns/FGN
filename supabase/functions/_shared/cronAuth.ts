@@ -1,8 +1,4 @@
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey, X-Cron-Secret',
-};
+import { getCorsHeaders } from './cors.ts';
 
 export interface CronAuthResult {
   authorized: boolean;
@@ -39,7 +35,13 @@ export function verifyCronSecret(req: Request): CronAuthResult {
   };
 }
 
-export function createCronUnauthorizedResponse(error: string = 'Unauthorized'): Response {
+export function createCronUnauthorizedResponse(
+  req: Request,
+  error: string = 'Unauthorized'
+): Response {
+  const origin = req.headers.get('Origin');
+  const corsHeaders = getCorsHeaders(origin);
+
   return new Response(
     JSON.stringify({
       success: false,

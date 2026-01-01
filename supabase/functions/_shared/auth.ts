@@ -1,9 +1,11 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.57.4';
+import { getCorsHeaders } from './cors.ts';
 
 export interface AuthResult {
   authorized: boolean;
   error?: string;
   userId?: string;
+  userEmail?: string;
 }
 
 export async function verifyAdminAuth(req: Request): Promise<AuthResult> {
@@ -43,7 +45,7 @@ export async function verifyAdminAuth(req: Request): Promise<AuthResult> {
 
   const { data: adminUser, error: adminError } = await supabase
     .from('admin_users')
-    .select('is_active')
+    .select('is_active, email')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -57,10 +59,17 @@ export async function verifyAdminAuth(req: Request): Promise<AuthResult> {
   return {
     authorized: true,
     userId: user.id,
+    userEmail: adminUser.email || user.email,
   };
 }
 
-export function createUnauthorizedResponse(error: string = 'Unauthorized'): Response {
+export function createUnauthorizedResponse(
+  req: Request,
+  error: string = 'Unauthorized'
+): Response {
+  const origin = req.headers.get('Origin');
+  const corsHeaders = getCorsHeaders(origin);
+
   return new Response(
     JSON.stringify({
       success: false,
@@ -71,9 +80,7 @@ export function createUnauthorizedResponse(error: string = 'Unauthorized'): Resp
       status: 403,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey, X-Cron-Secret',
+        ...corsHeaders,
       },
     }
   );

@@ -1,11 +1,8 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.57.4';
 import { verifyAdminAuth, createUnauthorizedResponse } from '../_shared/auth.ts';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey, X-Cron-Secret',
-};
+import { handleCorsPrelight, createCorsResponse } from '../_shared/cors.ts';
+import { checkRateLimit, createRateLimitResponse } from '../_shared/rateLimit.ts';
+import { logContentAction } from '../_shared/audit.ts';
 
 function createSlug(title: string): string {
   return title
@@ -169,34 +166,32 @@ function parseJsonResponse(text: string): any {
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 200,
-      headers: corsHeaders,
-    });
+  const corsPreflightResponse = handleCorsPrelight(req);
+  if (corsPreflightResponse) {
+    return corsPreflightResponse;
   }
 
   const authResult = await verifyAdminAuth(req);
   if (!authResult.authorized) {
-    return createUnauthorizedResponse(authResult.error);
+    return createUnauthorizedResponse(req, authResult.error);
+  }
+
+  const rateLimitResult = checkRateLimit(req, 'ai_generation', authResult.userId);
+  if (!rateLimitResult.allowed) {
+    return createRateLimitResponse(rateLimitResult.retryAfter!);
   }
 
   try {
     const openRouterKey = Deno.env.get('OPENROUTER_API_KEY');
 
     if (!openRouterKey) {
-      return new Response(
-        JSON.stringify({
+      return createCorsResponse(
+        {
           success: false,
           error: 'OpenRouter API key not configured. This feature requires an OpenRouter API key for AI content generation.',
-        }),
-        {
-          status: 400,
-          headers: {
-            ...corsHeaders,
-            'Content-Type': 'application/json',
-          },
-        }
+        },
+        req,
+        { status: 400 }
       );
     }
 
@@ -398,39 +393,51 @@ Be descriptive and engaging.`;
         } else {
           results.created++;
           results.items.push(content);
+
+          const entityIdFromInsert = insertResult.data?.[0]?.id || 'unknown';
+          await logContentAction(
+            req,
+            authResult.userId!,
+            authResult.userEmail,
+            'ai_generate',
+            getEntityFromType(type),
+            entityIdFromInsert,
+            { topic, generatedTitle: content.title || content.game_title }
+          );
         }
       } catch (error) {
         results.errors.push(`Generation error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     }
 
-    return new Response(
-      JSON.stringify({
+    return createCorsResponse(
+      {
         success: true,
         message: `Generated ${results.created} ${type}(s) successfully`,
         ...results,
-      }),
-      {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
-      }
+      },
+      req
     );
   } catch (error) {
     console.error('Error generating AI content:', error);
-    return new Response(
-      JSON.stringify({
+    return createCorsResponse(
+      {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error occurred',
-      }),
-      {
-        status: 500,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
-      }
+      },
+      req,
+      { status: 500 }
     );
   }
 });
+
+function getEntityFromType(type: string): 'blog_posts' | 'news_posts' | 'news_articles' | 'guides' | 'game_releases' | 'reviews' | 'videos' | 'gallery_items' {
+  switch (type) {
+    case 'news': return 'news_articles';
+    case 'review': return 'reviews';
+    case 'blog': return 'blog_posts';
+    case 'video': return 'videos';
+    case 'gallery': return 'gallery_items';
+    default: return 'blog_posts';
+  }
+}
