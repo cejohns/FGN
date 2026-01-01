@@ -10,7 +10,7 @@ DECLARE
   new_user_id uuid;
   user_email text := 'cejohns3@gmail.com';  -- CHANGE THIS
   user_password text := 'admin123!';  -- CHANGE THIS
-  user_full_name text := 'Admin Cory;  -- CHANGE THIS
+  user_full_name text := 'Admin Cory';  -- CHANGE THIS
 BEGIN
   -- Create the auth user
   INSERT INTO auth.users (
