@@ -1,7 +1,9 @@
+import { verifyAdminAuth, createUnauthorizedResponse } from '../_shared/auth.ts';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey, X-Cron-Secret',
 };
 
 interface FetchResult {
@@ -39,6 +41,11 @@ Deno.serve(async (req: Request) => {
       status: 200,
       headers: corsHeaders,
     });
+  }
+
+  const authResult = await verifyAdminAuth(req);
+  if (!authResult.authorized) {
+    return createUnauthorizedResponse(authResult.error);
   }
 
   try {

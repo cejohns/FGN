@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edge Function Auth Test</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .test {
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+    .success { background: #d4edda; }
+    .failure { background: #f8d7da; }
+    button {
+      padding: 10px 20px;
+      margin: 10px 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Edge Function Authentication Test</h1>
+  <p>This tests that write-capable edge functions reject unauthorized requests.</p>
+
+  <button onclick="runTests()">Run Tests</button>
+  <button onclick="clearResults()">Clear Results</button>
+
+  <div id="results"></div>
+
+  <script type="module">
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL_HERE';
+
+    const writeFunctions = [
+      'sync-game-releases',
+      'sync-platform-news',
+      'sync-youtube-news',
+      'generate-ai-content',
+      'update-game-images',
+      'seed-demo-releases',
+      'fetch-igdb-releases',
+      'fetch-rawg-releases',
+      'fetch-game-deals',
+      'fetch-igdb-games',
+      'fetch-gaming-news',
+      'fetch-steam-content',
+      'fetch-twitch-videos',
+      'fetch-all-gaming-content',
+      'fetch-giantbomb-content'
+    ];
+
+    window.runTests = async function() {
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '<h2>Running tests...</h2>';
+
+      for (const funcName of writeFunctions) {
+        const url = `${SUPABASE_URL}/functions/v1/${funcName}`;
+
+        try {
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+
+          const testDiv = document.createElement('div');
+          testDiv.className = 'test';
+
+          if (response.status === 401 || response.status === 403) {
+            testDiv.className += ' success';
+            testDiv.innerHTML = `<strong>✓ ${funcName}</strong><br>Status: ${response.status} (Correctly blocked)`;
+          } else {
+            testDiv.className += ' failure';
+            testDiv.innerHTML = `<strong>✗ ${funcName}</strong><br>Status: ${response.status} (Should be 401/403)<br>Response: ${await response.text()}`;
+          }
+
+          resultsDiv.appendChild(testDiv);
+        } catch (error) {
+          const testDiv = document.createElement('div');
+          testDiv.className = 'test failure';
+          testDiv.innerHTML = `<strong>✗ ${funcName}</strong><br>Error: ${error.message}`;
+          resultsDiv.appendChild(testDiv);
+        }
+      }
+    };
+
+    window.clearResults = function() {
+      document.getElementById('results').innerHTML = '';
+    };
+  </script>
+</body>
+</html>

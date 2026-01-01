@@ -1,10 +1,11 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.57.4';
 import { DOMParser } from 'https://deno.land/x/deno_dom@v0.1.45/deno-dom-wasm.ts';
+import { verifyAdminAuth, createUnauthorizedResponse } from '../_shared/auth.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey, X-Cron-Secret',
 };
 
 interface RSSItem {
@@ -178,6 +179,11 @@ Deno.serve(async (req: Request) => {
       status: 200,
       headers: corsHeaders,
     });
+  }
+
+  const authResult = await verifyAdminAuth(req);
+  if (!authResult.authorized) {
+    return createUnauthorizedResponse(authResult.error);
   }
 
   try {
