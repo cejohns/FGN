@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { supabase, NewsArticle, GameReview, Video, BlogPost } from '../lib/supabase';
 import { Clock, Eye, Star, Play, BookOpen } from 'lucide-react';
+import { useSEO, pageSEO } from '../lib/seo';
 
 interface HomePageProps {
   onNavigate: (section: string, id?: string) => void;
 }
 
 export default function HomePage({ onNavigate }: HomePageProps) {
+  useSEO(pageSEO.home);
+
   const [featuredNews, setFeaturedNews] = useState<NewsArticle[]>([]);
   const [featuredReviews, setFeaturedReviews] = useState<GameReview[]>([]);
   const [featuredVideos, setFeaturedVideos] = useState<Video[]>([]);
