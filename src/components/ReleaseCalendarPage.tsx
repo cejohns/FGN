@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useSEO, pageSEO } from '../lib/seo';
 import GameDetailsModal from './GameDetailsModal';
 
 interface GameRelease {
@@ -30,6 +31,8 @@ interface ReleaseCalendarPageProps {
 }
 
 export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseCalendarPageProps) {
+  useSEO(pageSEO.releases);
+
   const [games, setGames] = useState<GameRelease[]>([]);
   const [selectedGame, setSelectedGame] = useState<GameRelease | null>(null);
   const [loading, setLoading] = useState(true);
@@ -95,7 +98,9 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
 
   const getDaysUntilRelease = (dateString: string) => {
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const releaseDate = new Date(dateString);
+    releaseDate.setHours(0, 0, 0, 0);
     const diffTime = releaseDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
@@ -104,6 +109,18 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
     if (diffDays === 1) return 'TOMORROW';
     if (diffDays <= 7) return `${diffDays} DAYS`;
     return null;
+  };
+
+  const isReleasingToday = (dateString: string) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const releaseDate = new Date(dateString);
+    releaseDate.setHours(0, 0, 0, 0);
+    return today.getTime() === releaseDate.getTime();
+  };
+
+  const getTodaysReleases = () => {
+    return getFilteredGames().filter(game => isReleasingToday(game.release_date));
   };
 
   const getFilteredGames = () => {
@@ -141,6 +158,7 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
   };
 
   const filteredGames = getFilteredGames();
+  const todaysReleases = getTodaysReleases();
   const relatedGames = selectedGame
     ? games.filter(g => g.id !== selectedGame.id && g.genre === selectedGame.genre).slice(0, 3)
     : [];
@@ -186,6 +204,82 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
           </div>
         </div>
 
+        {!loading && todaysReleases.length > 0 && (
+          <div className="mb-10 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10 border-2 border-cyan-500/30 rounded-2xl p-6 shadow-2xl">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="relative">
+                <div className="absolute inset-0 bg-cyan-500 blur-xl opacity-50 animate-pulse"></div>
+                <div className="relative bg-gradient-to-r from-cyan-500 to-blue-500 px-4 py-2 rounded-lg">
+                  <span className="text-white font-bold text-lg uppercase tracking-wider">
+                    🎮 Releasing Today
+                  </span>
+                </div>
+              </div>
+              <div className="h-px flex-1 bg-gradient-to-r from-cyan-500/50 to-transparent"></div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {todaysReleases.map((game) => {
+                const { day, month } = formatDate(game.release_date);
+
+                return (
+                  <div
+                    key={game.id}
+                    onClick={() => handleGameClick(game)}
+                    className="cursor-pointer group/today"
+                  >
+                    <div className="relative overflow-hidden rounded-xl border-2 border-cyan-500/30 hover:border-cyan-500 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/20">
+                      <div className="relative h-80 overflow-hidden bg-gx-dark">
+                        <img
+                          src={game.cover_image}
+                          alt={game.title}
+                          className="w-full h-full object-cover group-hover/today:scale-110 transition-transform duration-500"
+                        />
+
+                        <div className="absolute inset-0 bg-gradient-to-t from-gx-dark via-gx-dark/40 to-transparent" />
+
+                        <div className="absolute top-3 left-3 bg-cyan-500 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg animate-pulse">
+                          <div className="text-xl font-bold text-white leading-none">{day}</div>
+                          <div className="text-xs font-semibold text-white uppercase tracking-wider">{month}</div>
+                        </div>
+
+                        <div className="absolute top-3 right-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg uppercase tracking-wider animate-pulse">
+                          OUT NOW
+                        </div>
+
+                        {game.is_featured && (
+                          <div className="absolute top-14 right-3 bg-yellow-500 text-gx-dark text-xs font-bold px-3 py-1.5 rounded-full shadow-lg uppercase">
+                            Featured
+                          </div>
+                        )}
+
+                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gx-dark to-transparent">
+                          <h3 className="text-white font-bold text-lg mb-1 line-clamp-2 font-poppins">
+                            {game.title}
+                          </h3>
+                          <p className="text-cyan-300 text-sm font-medium mb-2">
+                            {game.genre.split(',')[0]}
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {game.platform.split(',').slice(0, 4).map((platform, idx) => (
+                              <span
+                                key={idx}
+                                className="text-xs text-white bg-cyan-500/20 px-2 py-0.5 rounded border border-cyan-500/30"
+                              >
+                                {platform.trim()}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div className="text-center py-20">
             <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-gx-accent mx-auto shadow-gx-red"></div>
@@ -196,7 +290,15 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
             <p className="text-gray-400 text-xl">No releases found for this platform</p>
           </div>
         ) : (
-          <div className="relative group">
+          <>
+            {todaysReleases.length > 0 && (
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-white font-poppins">All Upcoming Releases</h2>
+                <p className="text-gray-400 text-sm">Browse the complete calendar of upcoming games</p>
+              </div>
+            )}
+
+            <div className="relative group">
             <button
               onClick={() => scroll('left')}
               className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-3 bg-gx-dark/90 hover:bg-gx-accent text-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110 hover:shadow-gx-red"
@@ -288,6 +390,7 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
               })}
             </div>
           </div>
+          </>
         )}
 
         <div className="mt-12 text-center">
