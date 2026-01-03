@@ -152,7 +152,7 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
       <div className="relative z-10">
         <div className="mb-8">
           <h1 className="text-5xl font-bold text-white mb-2 font-poppins tracking-tight">
-            GX Corner
+            Game Releases
           </h1>
           <p className="text-gray-400">Upcoming game releases you don't want to miss</p>
         </div>
