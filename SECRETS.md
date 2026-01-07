@@ -21,13 +21,15 @@ This document outlines the API keys and secrets used by the FireStar Gaming Netw
 
 #### IGDB (Internet Game Database) - Primary Provider
 - **Status**: Optional but recommended
-- **Keys needed**: IGDB_CLIENT_ID, IGDB_ACCESS_TOKEN
+- **Keys needed**: IGDB_CLIENT_ID, IGDB_CLIENT_SECRET (or TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET)
 - **Used for**: Game releases, metadata, cover art, screenshots
 - **How to get**:
-  1. Register at https://api-docs.igdb.com/
-  2. Create an app in Twitch Developer Console
-  3. Generate access token
+  1. Register at https://dev.twitch.tv/console/apps
+  2. Create a new application
+  3. Copy Client ID and generate a Client Secret
+  4. Add to Supabase Edge Function secrets as IGDB_CLIENT_ID and IGDB_CLIENT_SECRET
 - **Rate limits**: 4 requests per second
+- **Note**: Access tokens are automatically managed and cached server-side. You only need to provide Client ID and Secret.
 
 #### RAWG Video Games Database - Secondary Provider
 - **Status**: Optional fallback
@@ -72,7 +74,7 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 # Optional - Configure in Supabase Edge Functions
 CRON_SECRET=your-cron-secret
 IGDB_CLIENT_ID=your-igdb-client-id
-IGDB_ACCESS_TOKEN=your-igdb-token
+IGDB_CLIENT_SECRET=your-igdb-client-secret
 RAWG_API_KEY=your-rawg-key
 STEAM_API_KEY=your-steam-key
 TWITCH_CLIENT_ID=your-twitch-client-id

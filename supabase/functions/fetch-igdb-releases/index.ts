@@ -1,45 +1,13 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.57.4';
 import { verifyAdminAuth, createUnauthorizedResponse } from '../_shared/auth.ts';
+import { igdbFetch } from '../_shared/igdbClient.ts';
+import { buildCoverUrl, buildScreenshotUrl } from '../_shared/igdbImages.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey, X-Cron-Secret',
 };
-
-const TWITCH_TOKEN_URL = 'https://id.twitch.tv/oauth2/token';
-const IGDB_URL = 'https://api.igdb.com/v4';
-
-let cachedToken: { value: string; exp: number } | null = null;
-
-async function getTwitchToken() {
-  const now = Date.now();
-  if (cachedToken && cachedToken.exp > now + 60000) {
-    return cachedToken.value;
-  }
-
-  const clientId = Deno.env.get('TWITCH_CLIENT_ID');
-  const clientSecret = Deno.env.get('TWITCH_CLIENT_SECRET');
-
-  if (!clientId || !clientSecret) {
-    throw new Error('TWITCH_CLIENT_ID and TWITCH_CLIENT_SECRET must be configured');
-  }
-
-  const tokenUrl = `${TWITCH_TOKEN_URL}?client_id=${clientId}&client_secret=${clientSecret}&grant_type=client_credentials`;
-  const res = await fetch(tokenUrl, { method: 'POST' });
-
-  if (!res.ok) {
-    throw new Error(`Twitch token error ${res.status}`);
-  }
-
-  const json = await res.json();
-  cachedToken = {
-    value: json.access_token,
-    exp: now + json.expires_in * 1000,
-  };
-
-  return cachedToken.value;
-}
 
 function createSlug(title: string): string {
   return title
@@ -72,9 +40,6 @@ Deno.serve(async (req: Request) => {
     const startEpoch = Math.floor(now / 1000);
     const endEpoch = Math.floor(end / 1000);
 
-    const token = await getTwitchToken();
-    const clientId = Deno.env.get('TWITCH_CLIENT_ID');
-
     const whereParts = [
       `date >= ${startEpoch}`,
       `date < ${endEpoch}`,
@@ -90,21 +55,7 @@ where ${whereParts.join(' & ')};
 sort date asc;
 limit 200;`;
 
-    const igdbRes = await fetch(`${IGDB_URL}/release_dates`, {
-      method: 'POST',
-      headers: {
-        'Client-ID': clientId!,
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'text/plain',
-      },
-      body: query,
-    });
-
-    if (!igdbRes.ok) {
-      throw new Error(`IGDB API error: ${igdbRes.status}`);
-    }
-
-    const releases = await igdbRes.json();
+    const releases = await igdbFetch('release_dates', query);
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -120,14 +71,11 @@ limit 200;`;
         continue;
       }
 
-      const coverId = release.game?.cover?.image_id;
-      const coverImage = coverId
-        ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${coverId}.jpg`
-        : 'https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg';
+      const coverImage = buildCoverUrl(release.game?.cover?.image_id);
 
       const screenshots = release.game?.screenshots || [];
       const bannerImage = screenshots.length > 0
-        ? `https://images.igdb.com/igdb/image/upload/t_screenshot_big/${screenshots[0].image_id}.jpg`
+        ? buildScreenshotUrl(screenshots[0].image_id)
         : coverImage;
 
       const platforms = [];
