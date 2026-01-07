@@ -133,35 +133,6 @@ export default function AdminPanel() {
     }
   };
 
-  const fetchGiantBombContent = async () => {
-    setLoading(true);
-    setError(null);
-    setResult(null);
-
-    try {
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-giantbomb-content`;
-
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch Giant Bomb content');
-      }
-
-      setResult(data);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const generateAIContent = async (type: 'news' | 'review' | 'blog' | 'video' | 'gallery', count: number = 1) => {
     setLoading(true);
@@ -646,34 +617,6 @@ export default function AdminPanel() {
           >
             <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
             <span>{loading ? 'Fetching Steam Content...' : 'Fetch Steam Content'}</span>
-          </button>
-        </div>
-
-        <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-bold text-white mb-3">Fetch Giant Bomb Content</h2>
-          <p className="text-gray-700 mb-4">
-            Access Giant Bomb's extensive gaming database with reviews, images, and videos.
-          </p>
-
-          <div className="bg-slate-950 rounded-lg p-4 mb-4 border border-red-200">
-            <h3 className="font-semibold text-white mb-2">What will be fetched:</h3>
-            <ul className="text-sm text-gray-700 space-y-1">
-              <li>• <strong>Game Reviews</strong> - Detailed game information</li>
-              <li>• <strong>Screenshots</strong> - High-quality game images</li>
-              <li>• <strong>Videos</strong> - Gaming videos and gameplay</li>
-            </ul>
-            <p className="text-xs text-gray-600 mt-3">
-              Requires Giant Bomb API key. Get one free at giantbomb.com
-            </p>
-          </div>
-
-          <button
-            onClick={fetchGiantBombContent}
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-bold py-3 px-6 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-          >
-            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-            <span>{loading ? 'Fetching Giant Bomb Content...' : 'Fetch Giant Bomb Content'}</span>
           </button>
         </div>
 
