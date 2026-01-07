@@ -120,3 +120,38 @@ export function withCronLogging<T>(
       throw error;
     });
 }
+
+export interface CronExecutionLogEntry {
+  execution_id: string;
+  job_name: string;
+  status: 'success' | 'failed';
+  items_processed: number;
+  items_failed: number;
+  duration_ms: number;
+  error_message?: string;
+  details?: Record<string, unknown>;
+}
+
+export async function logCronExecution(
+  supabase: any,
+  entry: CronExecutionLogEntry
+): Promise<void> {
+  try {
+    const { error } = await supabase.from('cron_execution_log').insert({
+      function_name: entry.job_name,
+      execution_status: entry.status,
+      started_at: new Date(Date.now() - entry.duration_ms).toISOString(),
+      completed_at: new Date().toISOString(),
+      duration_ms: entry.duration_ms,
+      records_processed: entry.items_processed,
+      error_message: entry.error_message,
+      metadata: entry.details || {},
+    });
+
+    if (error) {
+      console.error('[logCronExecution] Failed to log:', error);
+    }
+  } catch (err) {
+    console.error('[logCronExecution] Exception:', err);
+  }
+}
