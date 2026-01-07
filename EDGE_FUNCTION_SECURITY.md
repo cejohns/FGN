@@ -38,7 +38,6 @@ All the following functions require admin authentication:
 - `fetch-steam-content` - Fetches Steam content
 - `fetch-twitch-videos` - Fetches Twitch videos
 - `fetch-all-gaming-content` - Orchestrates all content fetching
-- `fetch-giantbomb-content` - Fetches Giant Bomb content
 
 ## How to Call Secured Functions
 

@@ -239,7 +239,6 @@ Update remaining Edge Functions with CORS, rate limiting, and audit logging:
 **Lower Priority (Read-Only):**
 - `fetch-twitch-videos`
 - `fetch-steam-content`
-- `fetch-giantbomb-content`
 
 ### Enhanced Monitoring
 - Set up alerts for repeated rate limit violations

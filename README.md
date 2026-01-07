@@ -54,7 +54,6 @@ project/
 │   │   ├── fetch-all-gaming-content/
 │   │   ├── fetch-game-deals/
 │   │   ├── fetch-gaming-news/
-│   │   ├── fetch-giantbomb-content/
 │   │   ├── fetch-igdb-games/
 │   │   ├── fetch-steam-content/
 │   │   ├── fetch-twitch-videos/
@@ -142,7 +141,6 @@ The project includes several Supabase Edge Functions for automated content aggre
 - `fetch-all-gaming-content` - Aggregates content from all sources
 - `fetch-game-deals` - Fetches gaming deals and discounts
 - `fetch-gaming-news` - Retrieves latest gaming news
-- `fetch-giantbomb-content` - Integrates with Giant Bomb API
 - `fetch-igdb-games` - Fetches game data from IGDB
 - `fetch-steam-content` - Retrieves Steam platform content
 - `fetch-twitch-videos` - Aggregates Twitch gaming videos
@@ -211,8 +209,8 @@ Customize colors in `tailwind.config.js`.
 ## API Integrations
 
 This platform can integrate with:
-- Giant Bomb API
-- IGDB (Internet Game Database)
+- IGDB (Internet Game Database) - Primary game data provider
+- RAWG Video Games Database - Secondary game data provider
 - Steam API
 - Twitch API
 - Gaming news RSS feeds

@@ -37,7 +37,6 @@ FUNCTIONS=(
   "fetch-steam-content"
   "fetch-twitch-videos"
   "fetch-all-gaming-content"
-  "fetch-giantbomb-content"
 )
 
 # Helper functions
