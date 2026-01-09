@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase, NewsArticle } from '../lib/supabase';
 import { Clock, Eye, ArrowLeft, Filter } from 'lucide-react';
+import ImageWithFallback from './ImageWithFallback';
 
 interface NewsPageProps {
   selectedArticleId?: string;
@@ -89,7 +90,7 @@ export default function NewsPage({ selectedArticleId, onBack }: NewsPageProps) {
 
         <article className="bg-slate-950 rounded-xl shadow-lg overflow-hidden">
           <div className="aspect-video overflow-hidden">
-            <img
+            <ImageWithFallback
               src={selectedArticle.featured_image}
               alt={selectedArticle.title}
               className="w-full h-full object-cover"
@@ -113,15 +114,17 @@ export default function NewsPage({ selectedArticleId, onBack }: NewsPageProps) {
 
             <h1 className="text-4xl font-bold text-white mb-4">{selectedArticle.title}</h1>
 
-            <div className="flex items-center space-x-3 mb-6 pb-6 border-b border-gray-200">
-              <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-                {selectedArticle.author.charAt(0)}
+            {selectedArticle.author && (
+              <div className="flex items-center space-x-3 mb-6 pb-6 border-b border-gray-200">
+                <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                  {selectedArticle.author.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p className="font-medium text-white">{selectedArticle.author}</p>
+                  <p className="text-sm text-gray-500">Staff Writer</p>
+                </div>
               </div>
-              <div>
-                <p className="font-medium text-white">{selectedArticle.author}</p>
-                <p className="text-sm text-gray-500">Staff Writer</p>
-              </div>
-            </div>
+            )}
 
             <div className="prose prose-lg max-w-none">
               <p className="text-xl text-gray-700 mb-6 font-medium leading-relaxed">{selectedArticle.excerpt}</p>
@@ -178,7 +181,7 @@ export default function NewsPage({ selectedArticleId, onBack }: NewsPageProps) {
               className="group bg-slate-950 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 text-left"
             >
               <div className="aspect-video overflow-hidden">
-                <img
+                <ImageWithFallback
                   src={article.featured_image}
                   alt={article.title}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
@@ -201,7 +204,7 @@ export default function NewsPage({ selectedArticleId, onBack }: NewsPageProps) {
                       {article.view_count}
                     </span>
                   </div>
-                  <span className="font-medium">{article.author}</span>
+                  {article.author && <span className="font-medium">{article.author}</span>}
                 </div>
               </div>
             </button>

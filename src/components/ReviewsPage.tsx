@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase, GameReview } from '../lib/supabase';
 import { Star, ArrowLeft, Calendar, Filter } from 'lucide-react';
+import ImageWithFallback from './ImageWithFallback';
 
 interface ReviewsPageProps {
   selectedReviewId?: string;
@@ -96,7 +97,7 @@ export default function ReviewsPage({ selectedReviewId, onBack }: ReviewsPagePro
         <article className="bg-slate-950 rounded-xl shadow-lg overflow-hidden">
           <div className="md:flex">
             <div className="md:w-1/3 aspect-[3/4] overflow-hidden">
-              <img
+              <ImageWithFallback
                 src={selectedReview.game_cover}
                 alt={selectedReview.game_title}
                 className="w-full h-full object-cover"
@@ -206,7 +207,7 @@ export default function ReviewsPage({ selectedReviewId, onBack }: ReviewsPagePro
               className="group bg-slate-950 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 text-left"
             >
               <div className="aspect-[3/4] overflow-hidden relative">
-                <img
+                <ImageWithFallback
                   src={review.game_cover}
                   alt={review.game_title}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"

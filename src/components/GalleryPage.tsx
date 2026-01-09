@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase, GalleryImage } from '../lib/supabase';
 import { X, Eye, Camera, Filter } from 'lucide-react';
+import ImageWithFallback from './ImageWithFallback';
 
 export default function GalleryPage() {
   const [images, setImages] = useState<GalleryImage[]>([]);
@@ -98,7 +99,7 @@ export default function GalleryPage() {
               onClick={() => openLightbox(image)}
               className="group relative aspect-square overflow-hidden rounded-lg shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1"
             >
-              <img
+              <ImageWithFallback
                 src={image.thumbnail_url}
                 alt={image.title}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
@@ -140,7 +141,7 @@ export default function GalleryPage() {
 
           <div className="max-w-6xl w-full" onClick={(e) => e.stopPropagation()}>
             <div className="bg-slate-950 rounded-xl overflow-hidden shadow-2xl">
-              <img
+              <ImageWithFallback
                 src={selectedImage.image_url}
                 alt={selectedImage.title}
                 className="w-full max-h-[70vh] object-contain bg-slate-900"

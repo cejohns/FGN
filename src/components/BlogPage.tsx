@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase, BlogPost } from '../lib/supabase';
 import { ArrowLeft, Clock, Eye, Video, BookOpen, Filter } from 'lucide-react';
+import ImageWithFallback from './ImageWithFallback';
 
 interface BlogPageProps {
   selectedPostId?: string;
@@ -103,7 +104,7 @@ export default function BlogPage({ selectedPostId, onBack }: BlogPageProps) {
             </div>
           ) : (
             <div className="aspect-video overflow-hidden">
-              <img
+              <ImageWithFallback
                 src={selectedPost.featured_image}
                 alt={selectedPost.title}
                 className="w-full h-full object-cover"
@@ -242,7 +243,7 @@ export default function BlogPage({ selectedPostId, onBack }: BlogPageProps) {
               className="group bg-slate-950 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 text-left"
             >
               <div className="aspect-video overflow-hidden relative">
-                <img
+                <ImageWithFallback
                   src={post.featured_image}
                   alt={post.title}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"

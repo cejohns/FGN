@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase, Video } from '../lib/supabase';
 import { Play, Eye, ArrowLeft, Clock, Filter } from 'lucide-react';
+import ImageWithFallback from './ImageWithFallback';
 
 interface VideosPageProps {
   selectedVideoId?: string;
@@ -181,7 +182,7 @@ export default function VideosPage({ selectedVideoId, onBack }: VideosPageProps)
               className="group bg-slate-950 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 text-left"
             >
               <div className="aspect-video overflow-hidden relative">
-                <img
+                <ImageWithFallback
                   src={video.thumbnail}
                   alt={video.title}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
