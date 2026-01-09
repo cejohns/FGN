@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { supabase, NewsArticle, GameReview, Video, BlogPost } from '../lib/supabase';
-import { Clock, Eye, Star, Play, BookOpen } from 'lucide-react';
+import { supabase, NewsArticle, GameReview, Video, BlogPost, Game } from '../lib/supabase';
+import { Clock, Eye, Star, Play, BookOpen, Gamepad2 } from 'lucide-react';
 import { useSEO, pageSEO } from '../lib/seo';
+import ImageWithFallback from './ImageWithFallback';
 
 interface HomePageProps {
   onNavigate: (section: string, id?: string) => void;
@@ -14,6 +15,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
   const [featuredReviews, setFeaturedReviews] = useState<GameReview[]>([]);
   const [featuredVideos, setFeaturedVideos] = useState<Video[]>([]);
   const [latestBlogs, setLatestBlogs] = useState<BlogPost[]>([]);
+  const [featuredGames, setFeaturedGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,17 +24,19 @@ export default function HomePage({ onNavigate }: HomePageProps) {
 
   const fetchFeaturedContent = async () => {
     try {
-      const [newsRes, reviewsRes, videosRes, blogsRes] = await Promise.all([
+      const [newsRes, reviewsRes, videosRes, blogsRes, gamesRes] = await Promise.all([
         supabase.from('news_articles').select('*').eq('status', 'published').eq('is_featured', true).order('published_at', { ascending: false }).limit(3),
         supabase.from('game_reviews').select('*').eq('status', 'published').eq('is_featured', true).order('published_at', { ascending: false }).limit(3),
         supabase.from('videos').select('*').eq('status', 'published').eq('is_featured', true).order('published_at', { ascending: false }).limit(3),
         supabase.from('blog_posts').select('*').eq('status', 'published').order('published_at', { ascending: false }).limit(3),
+        supabase.from('games').select('*').eq('status', 'published').eq('is_featured', true).order('rating', { ascending: false }).limit(6),
       ]);
 
       if (newsRes.data) setFeaturedNews(newsRes.data);
       if (reviewsRes.data) setFeaturedReviews(reviewsRes.data);
       if (videosRes.data) setFeaturedVideos(videosRes.data);
       if (blogsRes.data) setLatestBlogs(blogsRes.data);
+      if (gamesRes.data) setFeaturedGames(gamesRes.data);
     } catch (error) {
       console.error('Error fetching featured content:', error);
     } finally {
@@ -107,6 +111,55 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         </div>
       </section>
 
+      {featuredGames.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-3xl font-bold text-fs-text flex items-center space-x-2">
+              <Gamepad2 className="w-8 h-8 text-fs-blue" />
+              <span>Featured Games</span>
+            </h2>
+            <button
+              onClick={() => onNavigate('releases')}
+              className="text-fs-blue hover:text-fs-blueStrong font-medium transition-colors"
+            >
+              View Release Calendar →
+            </button>
+          </div>
+          <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {featuredGames.map((game) => (
+              <div
+                key={game.id}
+                className="group bg-fs-panel rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 border border-fs-dark hover:border-fs-blue"
+              >
+                <div className="aspect-[3/4] overflow-hidden relative">
+                  <ImageWithFallback
+                    src={game.cover_url}
+                    alt={game.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
+                  {game.rating && (
+                    <div className="absolute top-2 right-2 bg-fs-blue text-fs-dark px-2 py-1 rounded-full flex items-center space-x-1 font-bold text-sm">
+                      <Star className="w-3 h-3 fill-current" />
+                      <span>{game.rating.toFixed(1)}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="p-3">
+                  <h3 className="text-sm font-bold text-fs-text group-hover:text-fs-blue transition-colors line-clamp-2">
+                    {game.name}
+                  </h3>
+                  {game.platforms && game.platforms.length > 0 && (
+                    <p className="text-xs text-fs-muted mt-1 line-clamp-1">
+                      {game.platforms[0]}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {featuredNews.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-6">
@@ -126,7 +179,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                 className="group bg-fs-panel rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 text-left border border-fs-dark hover:border-fs-blue"
               >
                 <div className="aspect-video overflow-hidden">
-                  <img
+                  <ImageWithFallback
                     src={article.featured_image}
                     alt={article.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
@@ -177,7 +230,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                 className="group bg-fs-panel rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 text-left border border-fs-dark hover:border-fs-blue"
               >
                 <div className="aspect-[3/4] overflow-hidden relative">
-                  <img
+                  <ImageWithFallback
                     src={review.game_cover}
                     alt={review.game_title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
@@ -223,7 +276,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                 className="group bg-fs-panel rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 text-left border border-fs-dark hover:border-fs-blue"
               >
                 <div className="aspect-video overflow-hidden relative">
-                  <img
+                  <ImageWithFallback
                     src={video.thumbnail}
                     alt={video.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
@@ -277,7 +330,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                 className="group bg-fs-panel rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 text-left border border-fs-dark hover:border-fs-blue"
               >
                 <div className="aspect-video overflow-hidden">
-                  <img
+                  <ImageWithFallback
                     src={post.featured_image}
                     alt={post.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"

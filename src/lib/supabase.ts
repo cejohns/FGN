@@ -82,3 +82,57 @@ export interface BlogPost {
   view_count: number;
   is_featured: boolean;
 }
+
+export interface Game {
+  id: string;
+  igdb_id: number;
+  name: string;
+  slug: string;
+  summary: string;
+  storyline: string;
+  cover_url: string;
+  screenshot_urls: string[];
+  first_release_date: string;
+  rating: number;
+  rating_count: number;
+  genres: string[];
+  platforms: string[];
+  studios: string[];
+  status: string;
+  is_featured: boolean;
+  published_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GameRelease {
+  id: string;
+  title: string;
+  slug: string;
+  release_date: string;
+  platform: string;
+  region: string;
+  cover_image_url: string;
+  source: string;
+  source_id: string;
+  source_url: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Guide {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  cover_image_url: string;
+  tags: string[];
+  category: string;
+  status: string;
+  is_featured: boolean;
+  published_at: string;
+  created_at: string;
+  updated_at: string;
+}

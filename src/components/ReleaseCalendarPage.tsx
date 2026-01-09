@@ -1,29 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Filter } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase, GameRelease } from '../lib/supabase';
 import { useSEO, pageSEO } from '../lib/seo';
-import GameDetailsModal from './GameDetailsModal';
-
-interface GameRelease {
-  id: string;
-  title: string;
-  slug: string;
-  description: string;
-  cover_image: string;
-  banner_image: string;
-  trailer_url?: string;
-  genre: string;
-  platform: string;
-  developer: string;
-  publisher: string;
-  release_date: string;
-  price?: string;
-  preorder_link?: string;
-  rating_expected?: string;
-  features: string[];
-  view_count: number;
-  is_featured: boolean;
-}
+import ImageWithFallback from './ImageWithFallback';
 
 interface ReleaseCalendarPageProps {
   selectedGameId?: string;
@@ -34,7 +13,6 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
   useSEO(pageSEO.releases);
 
   const [games, setGames] = useState<GameRelease[]>([]);
-  const [selectedGame, setSelectedGame] = useState<GameRelease | null>(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pc' | 'playstation' | 'xbox' | 'switch'>('all');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -43,22 +21,13 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
     fetchGames();
   }, []);
 
-  useEffect(() => {
-    if (selectedGameId && games.length > 0) {
-      const game = games.find(g => g.id === selectedGameId);
-      if (game) {
-        setSelectedGame(game);
-        incrementViewCount(game.id);
-      }
-    }
-  }, [selectedGameId, games]);
-
   const fetchGames = async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('game_releases')
         .select('*')
+        .eq('status', 'published')
         .order('release_date', { ascending: true });
 
       if (error) throw error;
@@ -68,25 +37,6 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
     } finally {
       setLoading(false);
     }
-  };
-
-  const incrementViewCount = async (gameId: string) => {
-    try {
-      const game = games.find(g => g.id === gameId);
-      if (!game) return;
-
-      await supabase
-        .from('game_releases')
-        .update({ view_count: (game.view_count || 0) + 1 })
-        .eq('id', gameId);
-    } catch (error) {
-      console.error('Error incrementing view count:', error);
-    }
-  };
-
-  const handleGameClick = (game: GameRelease) => {
-    setSelectedGame(game);
-    incrementViewCount(game.id);
   };
 
   const formatDate = (dateString: string) => {
@@ -159,9 +109,6 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
 
   const filteredGames = getFilteredGames();
   const todaysReleases = getTodaysReleases();
-  const relatedGames = selectedGame
-    ? games.filter(g => g.id !== selectedGame.id && g.genre === selectedGame.genre).slice(0, 3)
-    : [];
 
   return (
     <div className="relative min-h-screen">
@@ -225,13 +172,12 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
                 return (
                   <div
                     key={game.id}
-                    onClick={() => handleGameClick(game)}
                     className="cursor-pointer group/today"
                   >
                     <div className="relative overflow-hidden rounded-xl border-2 border-cyan-500/30 hover:border-cyan-500 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/20">
                       <div className="relative h-80 overflow-hidden bg-gx-dark">
-                        <img
-                          src={game.cover_image}
+                        <ImageWithFallback
+                          src={game.cover_image_url}
                           alt={game.title}
                           className="w-full h-full object-cover group-hover/today:scale-110 transition-transform duration-500"
                         />
@@ -247,28 +193,19 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
                           OUT NOW
                         </div>
 
-                        {game.is_featured && (
-                          <div className="absolute top-14 right-3 bg-yellow-500 text-gx-dark text-xs font-bold px-3 py-1.5 rounded-full shadow-lg uppercase">
-                            Featured
-                          </div>
-                        )}
-
                         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gx-dark to-transparent">
                           <h3 className="text-white font-bold text-lg mb-1 line-clamp-2 font-poppins">
                             {game.title}
                           </h3>
-                          <p className="text-cyan-300 text-sm font-medium mb-2">
-                            {game.genre.split(',')[0]}
-                          </p>
+                          {game.region && (
+                            <p className="text-cyan-300 text-sm font-medium mb-2">
+                              {game.region}
+                            </p>
+                          )}
                           <div className="flex flex-wrap gap-1.5">
-                            {game.platform.split(',').slice(0, 4).map((platform, idx) => (
-                              <span
-                                key={idx}
-                                className="text-xs text-white bg-cyan-500/20 px-2 py-0.5 rounded border border-cyan-500/30"
-                              >
-                                {platform.trim()}
-                              </span>
-                            ))}
+                            <span className="text-xs text-white bg-cyan-500/20 px-2 py-0.5 rounded border border-cyan-500/30">
+                              {game.platform}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -328,13 +265,12 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
                 return (
                   <div
                     key={game.id}
-                    onClick={() => handleGameClick(game)}
                     className="flex-shrink-0 w-64 snap-start cursor-pointer group/card"
                   >
                     <div className="relative overflow-hidden rounded-2xl border-2 border-transparent hover:border-gx-accent/50 transition-all duration-300 hover:scale-105 hover:shadow-gx-card">
                       <div className="relative h-96 overflow-hidden bg-gx-dark">
-                        <img
-                          src={game.cover_image}
+                        <ImageWithFallback
+                          src={game.cover_image_url}
                           alt={game.title}
                           className="w-full h-full object-cover group-hover/card:scale-110 transition-transform duration-500"
                         />
@@ -352,38 +288,23 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
                           </div>
                         )}
 
-                        {game.is_featured && (
-                          <div className="absolute top-14 right-0 bg-gx-neon text-gx-dark text-xs font-bold px-4 py-2 shadow-lg uppercase tracking-wider">
-                            Featured
-                          </div>
-                        )}
-
-                        {game.rating_expected && (
-                          <div className="absolute bottom-3 right-3 bg-gx-dark/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full border border-white/20">
-                            {game.rating_expected}
-                          </div>
-                        )}
-
                         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gx-dark/95 to-transparent">
                           <h3 className="text-white font-bold text-lg mb-1 line-clamp-2 font-poppins">
                             {game.title}
                           </h3>
-                          <p className="text-gray-300 text-sm line-clamp-1">
-                            {game.genre.split(',')[0]}
-                          </p>
+                          {game.region && (
+                            <p className="text-gray-300 text-sm line-clamp-1">
+                              {game.region}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
 
                     <div className="mt-3 flex flex-wrap gap-1.5 px-1">
-                      {game.platform.split(',').slice(0, 3).map((platform, idx) => (
-                        <span
-                          key={idx}
-                          className="text-xs text-gray-400 bg-gx-dark/50 px-2 py-1 rounded border border-white/5"
-                        >
-                          {platform.trim()}
-                        </span>
-                      ))}
+                      <span className="text-xs text-gray-400 bg-gx-dark/50 px-2 py-1 rounded border border-white/5">
+                        {game.platform}
+                      </span>
                     </div>
                   </div>
                 );
@@ -399,18 +320,6 @@ export default function ReleaseCalendarPage({ selectedGameId, onBack }: ReleaseC
           </p>
         </div>
       </div>
-
-      {selectedGame && (
-        <GameDetailsModal
-          game={selectedGame}
-          relatedGames={relatedGames}
-          onClose={() => setSelectedGame(null)}
-          onGameSelect={(game) => {
-            setSelectedGame(game);
-            incrementViewCount(game.id);
-          }}
-        />
-      )}
 
       <style>{`
         .scrollbar-hide::-webkit-scrollbar {
