@@ -580,8 +580,7 @@ export function GalleryImageForm() {
     title: '',
     description: '',
     image_url: '',
-    thumbnail_url: '',
-    category: 'General',
+    category: 'screenshot',
     game_title: '',
     photographer: 'FireStar Network',
     is_featured: false,
@@ -608,8 +607,7 @@ export function GalleryImageForm() {
         title: '',
         description: '',
         image_url: '',
-        thumbnail_url: '',
-        category: 'General',
+        category: 'screenshot',
         game_title: '',
         photographer: 'FireStar Network',
         is_featured: false,
@@ -646,24 +644,12 @@ export function GalleryImageForm() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">Full Image URL</label>
+        <label className="block text-sm font-medium text-gray-300 mb-2">Image URL</label>
         <input
           type="url"
           required
           value={formData.image_url}
           onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-          placeholder="https://images.pexels.com/..."
-          className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">Thumbnail URL</label>
-        <input
-          type="url"
-          required
-          value={formData.thumbnail_url}
-          onChange={(e) => setFormData({ ...formData, thumbnail_url: e.target.value })}
           placeholder="https://images.pexels.com/..."
           className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500"
         />
