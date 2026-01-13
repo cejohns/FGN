@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # API Keys and Secrets Configuration
 
 This document outlines the API keys and secrets used by the FireStar Gaming Network platform.
@@ -132,3 +133,96 @@ See `src/lib/providers/` for implementation details.
 - IGDB provider stub
 - RAWG provider stub
 - ProviderManager for multi-provider fallback
+=======
+# 🔐 Secrets & Environment Variables – FireStar Gaming Network (FGN)
+
+This document tracks **where secrets come from** and **where they are configured**.
+Actual secret VALUES are never committed.
+
+---
+
+## ⚠️ Rules
+- ❌ Never commit real secret values
+- ❌ Never put private keys in Vite `.env`
+- ✅ Frontend only uses `VITE_*` public variables
+- ✅ All sensitive secrets live in Bolt or Supabase
+
+---
+
+## 🌐 Frontend (Vite / React – Public)
+
+**Location:** `.env` (local only, gitignored)
+
+| Variable | Purpose | Source |
+|--------|--------|--------|
+| `VITE_SUPABASE_URL` | Supabase project URL | Supabase Dashboard |
+| `VITE_SUPABASE_ANON_KEY` | Public anon key | Supabase Dashboard |
+
+⚠️ These values are visible in the browser.
+
+---
+
+## 🧠 Backend / Server (Bolt Secrets)
+
+**Location:** Bolt → Project → Settings → Secrets
+
+| Variable | Purpose | Source |
+|--------|--------|--------|
+| `CRON_SECRET` | Protect cron endpoints | Generated manually |
+| `ALLOWED_ORIGINS` | CORS allowlist | App config |
+| `IGDB_CLIENT_ID` | IGDB auth | Twitch Developer Console |
+| `IGDB_CLIENT_SECRET` | IGDB auth | Twitch Developer Console |
+| `TWITCH_CLIENT_ID` | Twitch OAuth | Twitch Developer Console |
+| `TWITCH_CLIENT_SECRET` | Twitch OAuth | Twitch Developer Console |
+| `NEWSAPI_KEY` | Gaming news articles | newsapi.org |
+| `RAWG_API_KEY` | Game database | rawg.io |
+| `GIANTBOMB_API_KEY` | Game database | giantbomb.com |
+| `YOUTUBE_API_KEY` | YouTube Data API | Google Cloud Console |
+| `OPENROUTER_API_KEY` | AI content generation | openrouter.ai |
+| `NINTENDO_FEED_URL` | Nintendo RSS feed | nintendo.com |
+
+---
+
+## ⚙️ Local Scripts / Ingest Jobs
+
+**Location:** `scripts/.env` (gitignored)
+
+| Variable | Purpose |
+|--------|--------|
+| `SUPABASE_URL` | Supabase access |
+| `SUPABASE_SERVICE_ROLE_KEY` | Full DB access (server only) |
+| `IGDB_CLIENT_ID` | IGDB ingest |
+| `IGDB_CLIENT_SECRET` | IGDB ingest |
+
+---
+
+## 🛡️ Supabase Internal Secrets
+
+Managed directly by Supabase:
+- Database credentials
+- JWT signing keys
+- PostgREST configuration
+
+Not stored in repo.
+
+---
+
+## 🔁 Key Rotation Policy
+- Rotate keys every 6–12 months
+- Rotate immediately if leaked
+- Update Bolt + scripts together
+
+---
+
+## 📌 Notes
+- If a secret is missing, check Bolt → Secrets first
+- 404 from `/rest/v1/*` usually means missing tables, not missing secrets
+
+### GIANTBOMB_API_KEY
+Status: ❌ Disabled (API offline as of 2025)
+
+Giant Bomb APIs are currently unavailable following their
+infrastructure rebuild after leaving Fandom.
+Integration is paused until a new API is released.
+
+>>>>>>> c9e009c (Add Supbase and docker along with setting up secrets)

@@ -4,6 +4,7 @@ import { NewsArticleForm, GameReviewForm, VideoForm, GalleryImageForm, BlogPostF
 import ReleaseCalendarPage from './ReleaseCalendarPage';
 import DraftPreview from './DraftPreview';
 import { useAuth } from '../lib/auth';
+import { supabase } from '../lib/supabase';
 
 export default function AdminPanel() {
   const { adminUser, signOut } = useAuth();
@@ -234,36 +235,44 @@ export default function AdminPanel() {
     }
   };
 
-  const syncYouTubeNews = async () => {
-    setLoading(true);
-    setError(null);
-    setResult(null);
+const syncYouTubeNews = async () => {
+  setLoading(true);
+  setError(null);
+  setResult(null);
 
-    try {
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-youtube-news`;
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ maxResults: 10 }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to sync YouTube news');
-      }
-
-      setResult(data);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    if (!session?.access_token) {
+      throw new Error('Not authenticated');
     }
-  };
+
+    const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-youtube-news`;
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${session.access_token}`, // ✅ REAL JWT
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ maxResults: 10 }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to sync YouTube news');
+    }
+
+    setResult(data);
+  } catch (err: any) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const generateMixedContent = async () => {
     setLoading(true);
