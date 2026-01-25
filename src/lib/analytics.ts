@@ -82,6 +82,13 @@ if (typeof window !== 'undefined') {
       analytics.isLoaded();
       console.log('%c[Analytics]', 'color: #34a853; font-weight: bold;',
         'To debug, run: analytics.debugDataLayer()');
+
+      // Debug environment configuration
+      console.group('%c[Config Debug]', 'color: #ea4335; font-weight: bold;');
+      console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+      console.log('Build time:', new Date().toISOString());
+      console.log('Environment:', import.meta.env.MODE);
+      console.groupEnd();
     }, 1000);
   });
 }
