@@ -12,6 +12,7 @@ import ReleaseCalendarPage from './components/ReleaseCalendarPage';
 import AdminLogin from './components/AdminLogin';
 import AdminPanel from './components/AdminPanel';
 import { useAuth } from './lib/auth';
+import { analytics } from './lib/analytics';
 
 function App() {
   const [currentSection, setCurrentSection] = useState('home');
@@ -30,6 +31,24 @@ function App() {
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, []);
+
+  // Track page views when section changes
+  useEffect(() => {
+    const pageTitles: Record<string, string> = {
+      home: 'Home',
+      news: 'Gaming News',
+      reviews: 'Game Reviews',
+      videos: 'Gaming Videos',
+      gallery: 'Gaming Gallery',
+      blog: 'Blog',
+      guides: 'Gaming Guides',
+      releases: 'Release Calendar',
+      admin: 'Admin Panel'
+    };
+
+    const pageTitle = pageTitles[currentSection] || currentSection;
+    analytics.pageView(`/${currentSection}`, `FireStar Gaming Network - ${pageTitle}`);
+  }, [currentSection]);
 
   const handleNavigate = (section: string, itemId?: string) => {
     setCurrentSection(section);
