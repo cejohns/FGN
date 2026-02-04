@@ -11,6 +11,7 @@ import GuidesPage from './components/GuidesPage';
 import ReleaseCalendarPage from './components/ReleaseCalendarPage';
 import AdminLogin from './components/AdminLogin';
 import AdminPanel from './components/AdminPanel';
+import SupabaseTest from './components/SupabaseTest';
 import { useAuth } from './lib/auth';
 import { analytics } from './lib/analytics';
 
@@ -24,6 +25,11 @@ function App() {
       if (e.ctrlKey && e.shiftKey && e.key === 'A') {
         e.preventDefault();
         setCurrentSection('admin');
+        window.scrollTo(0, 0);
+      }
+      if (e.ctrlKey && e.shiftKey && e.key === 'T') {
+        e.preventDefault();
+        setCurrentSection('test');
         window.scrollTo(0, 0);
       }
     };
@@ -87,6 +93,7 @@ function App() {
         {currentSection === 'admin' && (
           isAdmin ? <AdminPanel /> : <AdminLogin />
         )}
+        {currentSection === 'test' && <SupabaseTest />}
       </main>
 
       <Footer onNavigate={handleNavigate} />

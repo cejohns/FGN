@@ -80,14 +80,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
+      console.log('Attempting sign in...');
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      console.log('Sign in response:', { hasData: !!data, error });
+
+      if (error) {
+        console.error('Sign in error:', error);
+        throw error;
+      }
 
       if (data.user) {
+        console.log('User signed in, updating last login...');
         await supabase
           .from('admin_users')
           .update({ last_login_at: new Date().toISOString() })
@@ -96,6 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       return { error: null };
     } catch (error) {
+      console.error('Sign in failed:', error);
       return { error: error as Error };
     }
   };
