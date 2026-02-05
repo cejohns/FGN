@@ -1,8 +1,12 @@
 import { useState } from 'react';
-import { Lock, AlertCircle } from 'lucide-react';
+import { Lock, AlertCircle, TestTube } from 'lucide-react';
 import { useAuth } from '../lib/auth';
 
-export default function AdminLogin() {
+interface AdminLoginProps {
+  onNavigate?: (section: string) => void;
+}
+
+export default function AdminLogin({ onNavigate }: AdminLoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -83,9 +87,18 @@ export default function AdminLogin() {
         </form>
 
         <div className="mt-6 p-4 bg-slate-900 rounded-lg border border-slate-700">
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-400 mb-3">
             <strong>Secure Authentication:</strong> This admin panel uses Supabase Auth with encrypted password storage and JWT tokens.
           </p>
+          {onNavigate && (
+            <button
+              onClick={() => onNavigate('test')}
+              className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors"
+            >
+              <TestTube className="w-3 h-3" />
+              Connection Problems? Run Diagnostics
+            </button>
+          )}
         </div>
       </div>
     </div>

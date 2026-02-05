@@ -86,6 +86,13 @@ export default function SupabaseTest() {
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-white mb-6">Supabase Connection Test</h1>
 
+        <div className="bg-blue-950/50 border border-blue-500/50 rounded-lg p-4 mb-6">
+          <p className="text-blue-300 text-sm">
+            This diagnostic tool tests your Supabase connection, environment variables, and authentication setup.
+            Use this when troubleshooting login or database connection issues.
+          </p>
+        </div>
+
         <button
           onClick={runTests}
           disabled={status === 'testing'}

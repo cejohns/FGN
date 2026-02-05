@@ -91,7 +91,7 @@ function App() {
         {currentSection === 'blog' && <BlogPage selectedPostId={selectedItemId} onBack={handleBack} />}
         {currentSection === 'guides' && <GuidesPage />}
         {currentSection === 'admin' && (
-          isAdmin ? <AdminPanel /> : <AdminLogin />
+          isAdmin ? <AdminPanel /> : <AdminLogin onNavigate={handleNavigate} />
         )}
         {currentSection === 'test' && <SupabaseTest />}
       </main>
