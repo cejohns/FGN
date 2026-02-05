@@ -136,16 +136,46 @@ If already authenticated, click the "Admin" button in the bottom-right corner.
 
 ## Edge Functions
 
-The project includes several Supabase Edge Functions for automated content aggregation:
+The project includes 17 Supabase Edge Functions for automated content aggregation:
 
+### IGDB Integration
+- `query-igdb` - Query IGDB API for game data
+- `fetch-igdb-games` - Fetch game details from IGDB
+- `fetch-igdb-releases` - Fetch upcoming releases from IGDB
+- `sync-igdb-games` - Sync game data to database
+- `sync-igdb-releases` - Sync release calendar to database
+- `update-game-images` - Update game cover images
+
+### Content Aggregation
 - `fetch-all-gaming-content` - Aggregates content from all sources
-- `fetch-game-deals` - Fetches gaming deals and discounts
 - `fetch-gaming-news` - Retrieves latest gaming news
-- `fetch-igdb-games` - Fetches game data from IGDB
-- `fetch-steam-content` - Retrieves Steam platform content
+- `sync-platform-news` - Sync platform-specific news (PlayStation, Xbox, Nintendo)
+- `sync-youtube-news` - Sync YouTube channel videos
 - `fetch-twitch-videos` - Aggregates Twitch gaming videos
+
+### Game Data
+- `fetch-rawg-releases` - Fetch releases from RAWG API
+- `fetch-game-deals` - Fetches gaming deals and discounts
+- `sync-game-releases` - Sync release calendar
+- `seed-demo-releases` - Seed database with demo data
+
+### Other
+- `fetch-steam-content` - Retrieves Steam platform content
 - `generate-ai-content` - AI-powered content generation
-- `update-game-images` - Updates game imagery
+
+### Deploying Edge Functions
+
+**Quick Deploy (Recommended):**
+
+```bash
+# Linux/Mac
+./deploy-functions.sh
+
+# Windows PowerShell
+.\deploy-functions.ps1
+```
+
+**For detailed deployment instructions**, see [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
 
 ### Invoking Edge Functions
 
