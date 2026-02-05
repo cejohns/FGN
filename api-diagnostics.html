@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Diagnostics</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen p-8">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-4xl font-bold mb-8 text-blue-400">API Diagnostics Dashboard</h1>
+
+    <div class="space-y-6">
+      <!-- Database Connectivity -->
+      <div class="bg-gray-800 rounded-lg p-6">
+        <h2 class="text-2xl font-semibold mb-4 text-green-400">Database Connectivity</h2>
+        <button onclick="checkDatabase()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded transition mb-4">
+          Run Database Tests
+        </button>
+        <div id="dbResults" class="space-y-2"></div>
+      </div>
+
+      <!-- Edge Functions -->
+      <div class="bg-gray-800 rounded-lg p-6">
+        <h2 class="text-2xl font-semibold mb-4 text-purple-400">Edge Functions</h2>
+        <button onclick="checkEdgeFunctions()" class="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded transition mb-4">
+          Test Edge Functions
+        </button>
+        <div id="edgeResults" class="space-y-2"></div>
+      </div>
+
+      <!-- IGDB Configuration -->
+      <div class="bg-gray-800 rounded-lg p-6">
+        <h2 class="text-2xl font-semibold mb-4 text-yellow-400">IGDB API Status</h2>
+        <button onclick="checkIGDB()" class="bg-yellow-600 hover:bg-yellow-700 px-6 py-2 rounded transition mb-4">
+          Test IGDB Connection
+        </button>
+        <div id="igdbResults" class="space-y-2"></div>
+      </div>
+
+      <!-- Environment Status -->
+      <div class="bg-gray-800 rounded-lg p-6">
+        <h2 class="text-2xl font-semibold mb-4 text-red-400">Environment Configuration</h2>
+        <div id="envResults" class="space-y-2 text-sm">
+          <div><span class="text-gray-400">Supabase URL:</span> <span id="envUrl" class="text-blue-300"></span></div>
+          <div><span class="text-gray-400">Anon Key:</span> <span id="envKey" class="text-green-300">Configured</span></div>
+        </div>
+      </div>
+
+      <!-- Full Report -->
+      <div class="bg-gray-800 rounded-lg p-6">
+        <h2 class="text-2xl font-semibold mb-4 text-blue-400">Full Diagnostic Report</h2>
+        <button onclick="runFullDiagnostics()" class="w-full bg-green-600 hover:bg-green-700 px-6 py-3 rounded transition font-semibold">
+          Run Complete Diagnostics
+        </button>
+        <div id="fullReport" class="mt-4"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    const SUPABASE_URL = 'https://dyfzxamsobywypoyocwz.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5Znp4YW1zb2J5d3lwb3lvY3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwODg4MTYsImV4cCI6MjA3NTY2NDgxNn0.ax_tgvpWH0GRfSXTNcqnX5gVXnfiGjH8AweuOuVbrvw';
+
+    document.getElementById('envUrl').textContent = SUPABASE_URL;
+
+    function addResult(containerId, name, status, details = '') {
+      const container = document.getElementById(containerId);
+      const resultDiv = document.createElement('div');
+
+      const statusIcon = status === 'success' ? '✓' : status === 'warning' ? '⚠' : '✗';
+      const statusColor = status === 'success' ? 'text-green-400' : status === 'warning' ? 'text-yellow-400' : 'text-red-400';
+
+      resultDiv.className = `border ${status === 'success' ? 'border-green-600' : status === 'warning' ? 'border-yellow-600' : 'border-red-600'} rounded p-3`;
+      resultDiv.innerHTML = `
+        <div class="flex items-start gap-2">
+          <span class="${statusColor} font-bold">${statusIcon}</span>
+          <div class="flex-1">
+            <div class="font-semibold">${name}</div>
+            ${details ? `<div class="text-sm text-gray-400 mt-1">${details}</div>` : ''}
+          </div>
+        </div>
+      `;
+
+      container.appendChild(resultDiv);
+    }
+
+    window.checkDatabase = async function() {
+      const container = document.getElementById('dbResults');
+      container.innerHTML = '<p class="text-gray-400">Testing database connectivity...</p>';
+
+      const tables = ['game_releases', 'blog_posts', 'guides', 'news_posts', 'gallery_images'];
+
+      for (const table of tables) {
+        try {
+          const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=count&limit=0`, {
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Range': '0-0'
+            }
+          });
+
+          if (response.ok) {
+            const contentRange = response.headers.get('content-range');
+            const count = contentRange ? contentRange.split('/')[1] : 'unknown';
+            addResult('dbResults', `Table: ${table}`, 'success', `${count} rows accessible`);
+          } else if (response.status === 404) {
+            addResult('dbResults', `Table: ${table}`, 'error', 'Table does not exist - migration not applied');
+          } else if (response.status === 401 || response.status === 403) {
+            addResult('dbResults', `Table: ${table}`, 'warning', 'Access denied - RLS policy blocking read');
+          } else {
+            addResult('dbResults', `Table: ${table}`, 'error', `HTTP ${response.status}: ${response.statusText}`);
+          }
+        } catch (error) {
+          addResult('dbResults', `Table: ${table}`, 'error', `Network error: ${error.message}`);
+        }
+      }
+    };
+
+    window.checkEdgeFunctions = async function() {
+      const container = document.getElementById('edgeResults');
+      container.innerHTML = '<p class="text-gray-400">Testing edge functions...</p>';
+
+      const functions = [
+        { name: 'query-igdb', endpoint: 'query-igdb?type=featured&limit=1' },
+        { name: 'sync-igdb-games', endpoint: 'sync-igdb-games', requiresAuth: true },
+        { name: 'sync-platform-news', endpoint: 'sync-platform-news', requiresAuth: true }
+      ];
+
+      for (const func of functions) {
+        try {
+          const response = await fetch(`${SUPABASE_URL}/functions/v1/${func.endpoint}`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            addResult('edgeResults', func.name, 'success', 'Function deployed and responding');
+          } else if (response.status === 401 && func.requiresAuth) {
+            addResult('edgeResults', func.name, 'success', 'Function deployed (requires CRON_SECRET)');
+          } else if (response.status === 404) {
+            addResult('edgeResults', func.name, 'error', 'Function not deployed');
+          } else {
+            const data = await response.json().catch(() => ({}));
+            addResult('edgeResults', func.name, 'warning', `HTTP ${response.status}: ${data.error || response.statusText}`);
+          }
+        } catch (error) {
+          if (error.message.includes('Failed to fetch')) {
+            addResult('edgeResults', func.name, 'error', 'Network error - CORS or function not deployed');
+          } else {
+            addResult('edgeResults', func.name, 'error', `Error: ${error.message}`);
+          }
+        }
+      }
+    };
+
+    window.checkIGDB = async function() {
+      const container = document.getElementById('igdbResults');
+      container.innerHTML = '<p class="text-gray-400">Testing IGDB API connection...</p>';
+
+      try {
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/query-igdb?type=featured&limit=1`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          addResult('igdbResults', 'IGDB Connection', 'success', 'API credentials configured and working');
+        } else if (data.error?.includes('credentials')) {
+          addResult('igdbResults', 'IGDB Connection', 'error', 'IGDB credentials not configured in Supabase secrets');
+        } else if (response.status === 404) {
+          addResult('igdbResults', 'IGDB Connection', 'error', 'query-igdb function not deployed');
+        } else {
+          addResult('igdbResults', 'IGDB Connection', 'warning', `Status: ${response.status} - ${data.error || 'Unknown error'}`);
+        }
+      } catch (error) {
+        if (error.message.includes('Failed to fetch')) {
+          addResult('igdbResults', 'IGDB Connection', 'error', 'Cannot reach edge function - CORS or deployment issue');
+        } else {
+          addResult('igdbResults', 'IGDB Connection', 'error', error.message);
+        }
+      }
+    };
+
+    window.runFullDiagnostics = async function() {
+      document.getElementById('fullReport').innerHTML = '<p class="text-yellow-400">Running full diagnostics...</p>';
+
+      await checkDatabase();
+      await new Promise(r => setTimeout(r, 500));
+      await checkEdgeFunctions();
+      await new Promise(r => setTimeout(r, 500));
+      await checkIGDB();
+
+      document.getElementById('fullReport').innerHTML = '<p class="text-green-400">✓ Diagnostics complete. Check results above.</p>';
+    };
+  </script>
+</body>
+</html>
