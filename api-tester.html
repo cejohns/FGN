@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Testing Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen p-8">
+  <div class="max-w-6xl mx-auto">
+    <h1 class="text-4xl font-bold mb-8 text-blue-400">API Testing Dashboard</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <!-- API Configuration -->
+      <div class="bg-gray-800 rounded-lg p-6">
+        <h2 class="text-xl font-semibold mb-4 text-green-400">Configuration</h2>
+        <div class="space-y-2 text-sm">
+          <div><span class="text-gray-400">URL:</span> <span id="apiUrl" class="text-blue-300"></span></div>
+          <div><span class="text-gray-400">Status:</span> <span id="configStatus" class="font-semibold"></span></div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="bg-gray-800 rounded-lg p-6">
+        <h2 class="text-xl font-semibold mb-4 text-green-400">Quick Stats</h2>
+        <div class="space-y-2 text-sm">
+          <div><span class="text-gray-400">Tests Run:</span> <span id="testsRun" class="text-blue-300">0</span></div>
+          <div><span class="text-gray-400">Successes:</span> <span id="successes" class="text-green-400">0</span></div>
+          <div><span class="text-gray-400">Failures:</span> <span id="failures" class="text-red-400">0</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Test Functions -->
+    <div class="bg-gray-800 rounded-lg p-6 mb-8">
+      <h2 class="text-2xl font-semibold mb-6 text-green-400">API Endpoints</h2>
+
+      <div class="space-y-4">
+        <!-- IGDB Query API -->
+        <div class="border border-gray-700 rounded-lg p-4">
+          <h3 class="text-lg font-semibold mb-3 text-blue-300">IGDB Query API</h3>
+          <div class="grid grid-cols-2 gap-3">
+            <button onclick="testAPI('query-igdb?type=featured&limit=5', 'Featured Games')"
+                    class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition">
+              Test Featured Games
+            </button>
+            <button onclick="testAPI('query-igdb?type=upcoming&limit=5', 'Upcoming Releases')"
+                    class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition">
+              Test Upcoming Releases
+            </button>
+            <button onclick="testAPI('query-igdb?type=search&query=zelda&limit=3', 'Search Games')"
+                    class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition">
+              Test Search (Zelda)
+            </button>
+            <button onclick="testAPI('query-igdb?type=id&id=1942', 'Game by ID')"
+                    class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition">
+              Test Game by ID
+            </button>
+          </div>
+        </div>
+
+        <!-- Sync Functions -->
+        <div class="border border-gray-700 rounded-lg p-4">
+          <h3 class="text-lg font-semibold mb-3 text-purple-300">Sync Functions (Requires Cron Secret)</h3>
+          <div class="grid grid-cols-2 gap-3">
+            <button onclick="testAPI('sync-igdb-games', 'Sync IGDB Games', true)"
+                    class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded transition">
+              Sync IGDB Games
+            </button>
+            <button onclick="testAPI('sync-igdb-releases', 'Sync IGDB Releases', true)"
+                    class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded transition">
+              Sync IGDB Releases
+            </button>
+            <button onclick="testAPI('sync-platform-news', 'Sync Platform News', true)"
+                    class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded transition">
+              Sync Platform News
+            </button>
+            <button onclick="testAPI('sync-youtube-news', 'Sync YouTube News', true)"
+                    class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded transition">
+              Sync YouTube News
+            </button>
+          </div>
+        </div>
+
+        <!-- Database Check -->
+        <div class="border border-gray-700 rounded-lg p-4">
+          <h3 class="text-lg font-semibold mb-3 text-yellow-300">Database Tests</h3>
+          <div class="grid grid-cols-2 gap-3">
+            <button onclick="checkDatabase('game_releases', 'Game Releases')"
+                    class="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded transition">
+              Check Game Releases
+            </button>
+            <button onclick="checkDatabase('news_posts', 'News Posts')"
+                    class="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded transition">
+              Check News Posts
+            </button>
+            <button onclick="checkDatabase('blog_posts', 'Blog Posts')"
+                    class="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded transition">
+              Check Blog Posts
+            </button>
+            <button onclick="checkDatabase('guides', 'Guides')"
+                    class="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded transition">
+              Check Guides
+            </button>
+          </div>
+        </div>
+
+        <!-- Run All Tests -->
+        <div class="border border-gray-700 rounded-lg p-4">
+          <button onclick="runAllTests()"
+                  class="w-full bg-green-600 hover:bg-green-700 px-4 py-3 rounded transition font-semibold">
+            Run All Public API Tests
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="bg-gray-800 rounded-lg p-6">
+      <h2 class="text-2xl font-semibold mb-4 text-green-400">Test Results</h2>
+      <div id="results" class="space-y-3 max-h-[500px] overflow-y-auto">
+        <p class="text-gray-400">Run a test to see results...</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // Configuration
+    const SUPABASE_URL = 'https://dyfzxamsobywypoyocwz.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5Znp4YW1zb2J5d3lwb3lvY3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwODg4MTYsImV4cCI6MjA3NTY2NDgxNn0.ax_tgvpWH0GRfSXTNcqnX5gVXnfiGjH8AweuOuVbrvw';
+
+    document.getElementById('apiUrl').textContent = SUPABASE_URL;
+    document.getElementById('configStatus').textContent = '✓ Configured';
+    document.getElementById('configStatus').className = 'font-semibold text-green-400';
+
+    let stats = { testsRun: 0, successes: 0, failures: 0 };
+
+    function updateStats() {
+      document.getElementById('testsRun').textContent = stats.testsRun;
+      document.getElementById('successes').textContent = stats.successes;
+      document.getElementById('failures').textContent = stats.failures;
+    }
+
+    function addResult(name, status, data, error = null) {
+      stats.testsRun++;
+      if (status === 'success') stats.successes++;
+      else stats.failures++;
+      updateStats();
+
+      const resultsDiv = document.getElementById('results');
+      if (stats.testsRun === 1) resultsDiv.innerHTML = '';
+
+      const resultDiv = document.createElement('div');
+      resultDiv.className = `border ${status === 'success' ? 'border-green-600' : 'border-red-600'} rounded-lg p-4`;
+
+      const timestamp = new Date().toLocaleTimeString();
+      const statusColor = status === 'success' ? 'text-green-400' : 'text-red-400';
+
+      let content = `
+        <div class="flex justify-between items-start mb-2">
+          <h3 class="font-semibold ${statusColor}">${name}</h3>
+          <span class="text-xs text-gray-400">${timestamp}</span>
+        </div>
+        <div class="text-sm ${statusColor} mb-2">${status === 'success' ? '✓ Success' : '✗ Failed'}</div>
+      `;
+
+      if (error) {
+        content += `<div class="text-sm text-red-300 bg-red-900/20 p-2 rounded mt-2">Error: ${error}</div>`;
+      } else if (data) {
+        const preview = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+        content += `<details class="mt-2"><summary class="cursor-pointer text-blue-300 text-sm">View Response</summary><pre class="text-xs bg-gray-900 p-2 rounded mt-2 overflow-x-auto">${preview}</pre></details>`;
+      }
+
+      resultDiv.innerHTML = content;
+      resultsDiv.insertBefore(resultDiv, resultsDiv.firstChild);
+    }
+
+    window.testAPI = async function(endpoint, name, requiresCronSecret = false) {
+      const url = `${SUPABASE_URL}/functions/v1/${endpoint}`;
+      const headers = {
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
+      };
+
+      if (requiresCronSecret) {
+        const cronSecret = prompt('Enter CRON_SECRET (from Supabase Dashboard > Edge Functions > Secrets):');
+        if (!cronSecret) {
+          addResult(name, 'failed', null, 'CRON_SECRET required but not provided');
+          return;
+        }
+        headers['x-cron-secret'] = cronSecret;
+      }
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          addResult(name, 'success', data);
+        } else {
+          addResult(name, 'failed', data, `HTTP ${response.status}: ${data.error || 'Unknown error'}`);
+        }
+      } catch (error) {
+        addResult(name, 'failed', null, error.message);
+      }
+    };
+
+    window.checkDatabase = async function(table, name) {
+      const url = `${SUPABASE_URL}/rest/v1/${table}?select=*&limit=5`;
+      const headers = {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      };
+
+      try {
+        const response = await fetch(url, { headers });
+        const data = await response.json();
+
+        if (response.ok) {
+          addResult(`${name} (${data.length} rows)`, 'success', data);
+        } else {
+          addResult(name, 'failed', data, `HTTP ${response.status}`);
+        }
+      } catch (error) {
+        addResult(name, 'failed', null, error.message);
+      }
+    };
+
+    window.runAllTests = async function() {
+      stats = { testsRun: 0, successes: 0, failures: 0 };
+      document.getElementById('results').innerHTML = '<p class="text-yellow-400">Running tests...</p>';
+
+      // IGDB tests
+      await testAPI('query-igdb?type=featured&limit=3', 'Featured Games');
+      await new Promise(r => setTimeout(r, 500));
+
+      await testAPI('query-igdb?type=upcoming&limit=3', 'Upcoming Releases');
+      await new Promise(r => setTimeout(r, 500));
+
+      await testAPI('query-igdb?type=search&query=mario&limit=3', 'Search API');
+      await new Promise(r => setTimeout(r, 500));
+
+      // Database tests
+      await checkDatabase('game_releases', 'Game Releases Table');
+      await new Promise(r => setTimeout(r, 500));
+
+      await checkDatabase('news_posts', 'News Posts Table');
+      await new Promise(r => setTimeout(r, 500));
+
+      await checkDatabase('blog_posts', 'Blog Posts Table');
+    };
+  </script>
+</body>
+</html>
