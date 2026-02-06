@@ -23,53 +23,43 @@ export interface NewsArticle {
   slug: string;
   excerpt: string;
   content: string;
-  cover_image_url?: string;
-  featured_image?: string;
-  category?: string;
-  author?: string;
-  published_at: string;
-  view_count: number;
-  is_featured: boolean;
+  cover_image_url: string;
   status: string;
+  is_featured: boolean;
+  published_at: string;
+  created_at: string;
+  updated_at: string;
+  view_count: number;
 }
 
 export interface GameReview {
   id: string;
-  title?: string;
-  game_title?: string;
+  title: string;
   slug: string;
-  cover_image_url?: string;
-  game_cover?: string;
-  platform?: string;
-  genre?: string;
-  developer?: string;
-  publisher?: string;
-  release_date?: string;
-  score?: number;
-  rating?: number;
+  score: number;
   excerpt: string;
   content: string;
-  reviewer?: string;
-  published_at: string;
-  view_count: number;
-  is_featured: boolean;
+  cover_image_url: string;
   status: string;
+  is_featured: boolean;
+  published_at: string;
+  created_at: string;
+  updated_at: string;
+  view_count: number;
 }
 
 export interface Video {
   id: string;
   title: string;
   slug: string;
-  description: string;
-  video_url: string;
-  thumbnail: string;
-  category: string;
-  duration: string;
-  creator: string;
-  published_at: string;
-  view_count: number;
-  is_featured: boolean;
+  youtube_url: string;
+  thumbnail_url: string;
   status: string;
+  is_featured: boolean;
+  published_at: string;
+  created_at: string;
+  updated_at: string;
+  view_count: number;
 }
 
 export interface GalleryImage {
@@ -92,7 +82,7 @@ export interface BlogPost {
   slug: string;
   excerpt: string;
   content: string;
-  cover_image_url?: string;
+  cover_image_url: string;
   featured_image?: string;
   post_type?: 'blog' | 'vlog';
   video_url?: string;
@@ -100,8 +90,10 @@ export interface BlogPost {
   author?: string;
   published_at: string;
   view_count: number;
-  is_featured: boolean;
+  is_featured?: boolean;
   status: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Game {

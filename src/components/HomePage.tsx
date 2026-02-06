@@ -128,13 +128,13 @@ export default function HomePage({ onNavigate }: HomePageProps) {
               >
                 <div className="aspect-video overflow-hidden">
                   <ImageWithFallback
-                    src={article.featured_image || article.cover_image_url}
+                    src={article.cover_image_url}
                     alt={article.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
                 </div>
                 <div className="p-5">
-                  <span className="text-xs font-semibold text-fs-blue uppercase tracking-wide">{article.category || 'News'}</span>
+                  <span className="text-xs font-semibold text-fs-blue uppercase tracking-wide">News</span>
                   <h3 className="text-xl font-bold text-fs-text mt-2 mb-2 group-hover:text-fs-blue transition-colors line-clamp-2">
                     {article.title}
                   </h3>
@@ -150,7 +150,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                         {article.view_count}
                       </span>
                     </div>
-                    <span className="font-medium">{article.author || 'FireStar'}</span>
+                    <span className="font-medium">FireStar</span>
                   </div>
                 </div>
               </button>
@@ -179,24 +179,24 @@ export default function HomePage({ onNavigate }: HomePageProps) {
               >
                 <div className="aspect-[3/4] overflow-hidden relative">
                   <ImageWithFallback
-                    src={review.game_cover || review.cover_image_url}
-                    alt={review.game_title || review.title}
+                    src={review.cover_image_url}
+                    alt={review.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
                   <div className="absolute top-3 right-3 bg-fs-blue text-fs-dark px-3 py-1 rounded-full flex items-center space-x-1 font-bold">
                     <Star className="w-4 h-4 fill-current" />
-                    <span>{review.rating || review.score}</span>
+                    <span>{review.score}</span>
                   </div>
                 </div>
                 <div className="p-5">
-                  <span className="text-xs font-semibold text-fs-blue uppercase tracking-wide">{review.genre || 'Review'}</span>
+                  <span className="text-xs font-semibold text-fs-blue uppercase tracking-wide">Review</span>
                   <h3 className="text-xl font-bold text-fs-text mt-2 mb-2 group-hover:text-fs-blue transition-colors line-clamp-2">
-                    {review.game_title || review.title}
+                    {review.title}
                   </h3>
                   <p className="text-fs-muted text-sm mb-3 line-clamp-2">{review.excerpt}</p>
                   <div className="flex items-center justify-between text-xs text-fs-silverDark">
-                    <span>{review.platform || 'Multi-platform'}</span>
-                    <span className="font-medium">{review.reviewer || 'FireStar'}</span>
+                    <span>Multi-platform</span>
+                    <span className="font-medium">FireStar</span>
                   </div>
                 </div>
               </button>
@@ -225,7 +225,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
               >
                 <div className="aspect-video overflow-hidden relative">
                   <ImageWithFallback
-                    src={video.thumbnail}
+                    src={video.thumbnail_url}
                     alt={video.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
@@ -234,19 +234,14 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                       <Play className="w-8 h-8 text-fs-dark fill-current ml-1" />
                     </div>
                   </div>
-                  {video.duration && (
-                    <div className="absolute bottom-3 right-3 bg-black bg-opacity-80 text-white px-2 py-1 rounded text-xs font-medium">
-                      {video.duration}
-                    </div>
-                  )}
                 </div>
                 <div className="p-5">
-                  <span className="text-xs font-semibold text-fs-blue uppercase tracking-wide">{video.category}</span>
+                  <span className="text-xs font-semibold text-fs-blue uppercase tracking-wide">Video</span>
                   <h3 className="text-xl font-bold text-fs-text mt-2 mb-2 group-hover:text-fs-blue transition-colors line-clamp-2">
                     {video.title}
                   </h3>
                   <div className="flex items-center justify-between text-xs text-fs-silverDark mt-3">
-                    <span className="font-medium">{video.creator}</span>
+                    <span className="font-medium">FireStar</span>
                     <span className="flex items-center">
                       <Eye className="w-3 h-3 mr-1" />
                       {video.view_count}
@@ -279,7 +274,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
               >
                 <div className="aspect-video overflow-hidden">
                   <ImageWithFallback
-                    src={post.featured_image || post.cover_image_url}
+                    src={post.cover_image_url}
                     alt={post.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
@@ -288,17 +283,15 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                   <div className="flex items-center space-x-2 mb-2">
                     <BookOpen className="w-4 h-4 text-fs-blue" />
                     <span className="text-xs font-semibold text-fs-blue uppercase tracking-wide">
-                      {post.post_type === 'vlog' ? 'Vlog' : 'Blog'}
+                      Blog
                     </span>
-                    <span className="text-xs text-fs-muted">•</span>
-                    <span className="text-xs text-fs-silverDark">{post.category || 'General'}</span>
                   </div>
                   <h3 className="text-xl font-bold text-fs-text mb-2 group-hover:text-fs-blue transition-colors line-clamp-2">
                     {post.title}
                   </h3>
                   <p className="text-fs-muted text-sm mb-3 line-clamp-2">{post.excerpt}</p>
                   <div className="flex items-center justify-between text-xs text-fs-silverDark">
-                    <span className="font-medium">{post.author || 'FireStar'}</span>
+                    <span className="font-medium">FireStar</span>
                     <span>{formatDate(post.published_at)}</span>
                   </div>
                 </div>
