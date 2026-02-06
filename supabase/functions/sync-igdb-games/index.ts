@@ -1,10 +1,10 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
-import { corsHeaders } from "./_shared/cors.ts";
-import { verifyCronSecret, createCronUnauthorizedResponse } from "./_shared/cronAuth.ts";
-import { igdbFetch } from "./_shared/igdbClient.ts";
-import { buildCoverUrl, buildScreenshotUrl } from "./_shared/igdbImages.ts";
-import { logCronExecution } from "./_shared/cronLogger.ts";
+import { corsHeaders } from "../_shared/cors.ts";
+import { verifyCronSecret, createCronUnauthorizedResponse } from "../_shared/cronAuth.ts";
+import { igdbFetch } from "../_shared/igdbClient.ts";
+import { buildCoverUrl, buildScreenshotUrl } from "../_shared/igdbImages.ts";
+import { logCronExecution } from "../_shared/cronLogger.ts";
 
 interface IGDBGame {
   id: number;
