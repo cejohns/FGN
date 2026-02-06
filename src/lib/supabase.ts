@@ -23,31 +23,37 @@ export interface NewsArticle {
   slug: string;
   excerpt: string;
   content: string;
-  featured_image: string;
-  category: string;
-  author: string;
+  cover_image_url?: string;
+  featured_image?: string;
+  category?: string;
+  author?: string;
   published_at: string;
   view_count: number;
   is_featured: boolean;
+  status: string;
 }
 
 export interface GameReview {
   id: string;
-  game_title: string;
+  title?: string;
+  game_title?: string;
   slug: string;
-  game_cover: string;
-  platform: string;
-  genre: string;
-  developer: string;
-  publisher: string;
-  release_date: string;
-  rating: number;
+  cover_image_url?: string;
+  game_cover?: string;
+  platform?: string;
+  genre?: string;
+  developer?: string;
+  publisher?: string;
+  release_date?: string;
+  score?: number;
+  rating?: number;
   excerpt: string;
   content: string;
-  reviewer: string;
+  reviewer?: string;
   published_at: string;
   view_count: number;
   is_featured: boolean;
+  status: string;
 }
 
 export interface Video {
@@ -63,6 +69,7 @@ export interface Video {
   published_at: string;
   view_count: number;
   is_featured: boolean;
+  status: string;
 }
 
 export interface GalleryImage {
@@ -85,14 +92,16 @@ export interface BlogPost {
   slug: string;
   excerpt: string;
   content: string;
-  featured_image: string;
-  post_type: 'blog' | 'vlog';
-  video_url: string;
-  category: string;
-  author: string;
+  cover_image_url?: string;
+  featured_image?: string;
+  post_type?: 'blog' | 'vlog';
+  video_url?: string;
+  category?: string;
+  author?: string;
   published_at: string;
   view_count: number;
   is_featured: boolean;
+  status: string;
 }
 
 export interface Game {
