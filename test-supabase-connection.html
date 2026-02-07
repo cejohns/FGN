@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supabase Connection Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .test-result {
+      margin: 20px 0;
+      padding: 15px;
+      border-radius: 8px;
+      background: #1e293b;
+    }
+    .success { border-left: 4px solid #10b981; }
+    .error { border-left: 4px solid #ef4444; }
+    .warning { border-left: 4px solid #f59e0b; }
+    pre {
+      background: #0f172a;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 12px;
+    }
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover { background: #2563eb; }
+    .input-group {
+      margin: 15px 0;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: #e2e8f0;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #94a3b8;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Supabase Connection Diagnostic Tool</h1>
+
+  <div class="input-group">
+    <label>Supabase URL:</label>
+    <input type="text" id="supabaseUrl" value="https://dyfzxamsobywypoyocwz.supabase.co">
+  </div>
+
+  <div class="input-group">
+    <label>Anon Key:</label>
+    <input type="text" id="anonKey" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5Znp4YW1zb2J5d3lwb3lvY3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwODg4MTYsImV4cCI6MjA3NTY2NDgxNn0.ax_tgvpWH0GRfSXTNcqnX5gVXnfiGjH8AweuOuVbrvw">
+  </div>
+
+  <button onclick="testConnection()">Test Connection</button>
+  <button onclick="testBlogPosts()">Test Blog Posts Query</button>
+  <button onclick="checkTables()">Check Available Tables</button>
+  <button onclick="checkRLS()">Check RLS Policies</button>
+
+  <div id="results"></div>
+
+  <script>
+    let supabase;
+
+    function initSupabase() {
+      const url = document.getElementById('supabaseUrl').value;
+      const key = document.getElementById('anonKey').value;
+      supabase = window.supabase.createClient(url, key);
+    }
+
+    function addResult(title, content, type = 'success') {
+      const results = document.getElementById('results');
+      const div = document.createElement('div');
+      div.className = `test-result ${type}`;
+      div.innerHTML = `<h3>${title}</h3><pre>${content}</pre>`;
+      results.appendChild(div);
+    }
+
+    async function testConnection() {
+      document.getElementById('results').innerHTML = '';
+      initSupabase();
+
+      try {
+        const { data, error } = await supabase
+          .from('blog_posts')
+          .select('count')
+          .limit(0)
+          .single();
+
+        if (error) {
+          addResult('Connection Test', JSON.stringify(error, null, 2), 'error');
+        } else {
+          addResult('Connection Successful!', 'Successfully connected to Supabase', 'success');
+        }
+      } catch (err) {
+        addResult('Connection Failed', err.message, 'error');
+      }
+    }
+
+    async function testBlogPosts() {
+      document.getElementById('results').innerHTML = '';
+      initSupabase();
+
+      addResult('Testing Blog Posts...', 'Fetching blog_posts with status=published', 'warning');
+
+      try {
+        const { data, error } = await supabase
+          .from('blog_posts')
+          .select('*')
+          .eq('status', 'published')
+          .order('published_at', { ascending: false });
+
+        if (error) {
+          addResult('Query Error', JSON.stringify(error, null, 2), 'error');
+        } else {
+          addResult('Query Successful!',
+            `Found ${data.length} blog posts:\n${JSON.stringify(data, null, 2)}`,
+            'success');
+        }
+      } catch (err) {
+        addResult('Query Failed',
+          `${err.message}\n\nFull error:\n${JSON.stringify(err, null, 2)}`,
+          'error');
+      }
+    }
+
+    async function checkTables() {
+      document.getElementById('results').innerHTML = '';
+      initSupabase();
+
+      try {
+        // Try to query each table
+        const tables = ['blog_posts', 'news_articles', 'game_reviews', 'videos', 'gallery_images'];
+
+        for (const table of tables) {
+          const { data, error, count } = await supabase
+            .from(table)
+            .select('*', { count: 'exact', head: true });
+
+          if (error) {
+            addResult(`Table: ${table}`, `Error: ${error.message}`, 'error');
+          } else {
+            addResult(`Table: ${table}`, `Exists! Row count: ${count}`, 'success');
+          }
+        }
+      } catch (err) {
+        addResult('Table Check Failed', err.message, 'error');
+      }
+    }
+
+    async function checkRLS() {
+      document.getElementById('results').innerHTML = '';
+      initSupabase();
+
+      addResult('Checking RLS Policies...', 'Testing access with anon key', 'warning');
+
+      try {
+        // Test SELECT
+        const { data: selectData, error: selectError } = await supabase
+          .from('blog_posts')
+          .select('id')
+          .limit(1);
+
+        if (selectError) {
+          addResult('SELECT Policy',
+            `BLOCKED: ${selectError.message}\nCode: ${selectError.code}`,
+            'error');
+        } else {
+          addResult('SELECT Policy', 'ALLOWED: Anonymous users can read blog_posts', 'success');
+        }
+
+        // Test INSERT
+        const { data: insertData, error: insertError } = await supabase
+          .from('blog_posts')
+          .insert([{ title: 'test', slug: 'test-' + Date.now(), excerpt: 'test', content: 'test', featured_image: 'test.jpg', author: 'test' }])
+          .select();
+
+        if (insertError) {
+          addResult('INSERT Policy',
+            `BLOCKED (expected): ${insertError.message}`,
+            'success');
+        } else {
+          addResult('INSERT Policy', 'WARNING: Anonymous users can insert!', 'warning');
+        }
+      } catch (err) {
+        addResult('RLS Check Failed', err.message, 'error');
+      }
+    }
+
+    // Auto-run connection test on load
+    window.onload = () => {
+      setTimeout(testBlogPosts, 500);
+    };
+  </script>
+</body>
+</html>
