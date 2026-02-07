@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Diagnostic</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a2e; color: #eee; }
+        .test { margin: 20px 0; padding: 15px; background: #16213e; border-radius: 8px; }
+        .success { color: #0ead69; }
+        .error { color: #ff4757; }
+        .warning { color: #ffa502; }
+        pre { background: #0f1419; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Blog Posts Diagnostic</h1>
+    <div id="output"></div>
+
+    <script type="module">
+        const output = document.getElementById('output');
+
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = 'test';
+            div.innerHTML = message;
+            output.appendChild(div);
+        }
+
+        try {
+            // Step 1: Load environment variables
+            log('<h2>Step 1: Loading Environment</h2>');
+            const envResponse = await fetch('/.env');
+            const envText = await envResponse.text();
+            const envVars = {};
+            envText.split('\n').forEach(line => {
+                const [key, ...values] = line.split('=');
+                if (key && values.length) {
+                    envVars[key.trim()] = values.join('=').trim();
+                }
+            });
+
+            const SUPABASE_URL = envVars.VITE_SUPABASE_URL;
+            const SUPABASE_ANON_KEY = envVars.VITE_SUPABASE_ANON_KEY;
+
+            log(`<span class="success">✅ Environment loaded</span><br>
+                 URL: ${SUPABASE_URL}<br>
+                 Key: ${SUPABASE_ANON_KEY ? '***' + SUPABASE_ANON_KEY.slice(-8) : 'MISSING'}`);
+
+            // Step 2: Initialize Supabase
+            log('<h2>Step 2: Initializing Supabase</h2>');
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+            await new Promise(resolve => {
+                script.onload = resolve;
+                document.head.appendChild(script);
+            });
+
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            log('<span class="success">✅ Supabase client created</span>');
+
+            // Step 3: Fetch blog posts (exact BlogPage query)
+            log('<h2>Step 3: Fetching Blog Posts</h2>');
+            console.log('Fetching blog posts...');
+
+            const { data, error, count } = await supabase
+                .from('blog_posts')
+                .select('*', { count: 'exact' })
+                .eq('status', 'published')
+                .order('published_at', { ascending: false });
+
+            if (error) {
+                log(`<span class="error">❌ Error: ${error.message}</span><br>
+                     <pre>${JSON.stringify(error, null, 2)}</pre>`);
+                throw error;
+            }
+
+            log(`<span class="success">✅ Query successful</span><br>
+                 Found: ${data.length} posts<br>
+                 Count: ${count}`);
+
+            // Step 4: Analyze posts
+            log('<h2>Step 4: Analyzing Posts</h2>');
+            data.forEach((post, i) => {
+                const issues = [];
+                if (!post.title) issues.push('Missing title');
+                if (!post.featured_image) issues.push('Missing featured_image');
+                if (!post.author) issues.push('Missing author');
+                if (!post.category) issues.push('Missing category');
+                if (!post.content) issues.push('Missing content');
+                if (!post.excerpt) issues.push('Missing excerpt');
+
+                const status = issues.length > 0 ? 'warning' : 'success';
+                const icon = issues.length > 0 ? '⚠️' : '✅';
+
+                log(`<span class="${status}">${icon} Post ${i + 1}: ${post.title || 'NO TITLE'}</span><br>
+                     ${issues.length > 0 ? 'Issues: ' + issues.join(', ') + '<br>' : ''}
+                     <pre>${JSON.stringify(post, null, 2)}</pre>`);
+            });
+
+            // Step 5: Test filtering logic
+            log('<h2>Step 5: Testing Filter Logic</h2>');
+            const selectedCategory = 'All';
+            const filteredPosts = selectedCategory === 'All'
+                ? data
+                : data.filter((post) => (post.category ?? '').trim() === selectedCategory);
+
+            log(`<span class="success">✅ Filter: "${selectedCategory}"</span><br>
+                 Posts after filter: ${filteredPosts.length}<br>
+                 Should render: ${filteredPosts.length > 0 ? 'YES' : 'NO'}`);
+
+            // Step 6: Summary
+            log('<h2>Summary</h2>');
+            if (data.length === 0) {
+                log('<span class="error">❌ No blog posts found in database</span>');
+            } else if (filteredPosts.length === 0) {
+                log('<span class="error">❌ Posts exist but all filtered out</span>');
+            } else {
+                log('<span class="success">✅ Everything looks good! Posts should display.</span>');
+                log('<span class="warning">If posts still don\'t show in the app, check browser console for errors.</span>');
+            }
+
+        } catch (error) {
+            log(`<span class="error">❌ Fatal Error: ${error.message}</span><br>
+                 <pre>${JSON.stringify(error, null, 2)}</pre>`);
+            console.error('Full error:', error);
+        }
+    </script>
+</body>
+</html>
