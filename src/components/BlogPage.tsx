@@ -29,20 +29,14 @@ export default function BlogPage({ selectedPostId, onBack }: BlogPageProps) {
   const fetchAllPosts = async () => {
     setLoading(true);
     try {
-      console.log('BlogPage: Fetching blog posts...');
       const { data, error } = await supabase
         .from('blog_posts')
         .select('*')
         .eq('status', 'published')
         .order('published_at', { ascending: false });
 
-      if (error) {
-        console.error('BlogPage: Error fetching posts:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log('BlogPage: Fetched', data?.length || 0, 'posts');
-      console.log('BlogPage: Posts data:', data);
       setPosts((data ?? []) as BlogPost[]);
     } catch (error) {
       console.error('BlogPage: Catch block error:', error);
@@ -121,14 +115,6 @@ export default function BlogPage({ selectedPostId, onBack }: BlogPageProps) {
     selectedCategory === 'All'
       ? posts
       : posts.filter((post) => (post.category ?? '').trim() === selectedCategory);
-
-  console.log('BlogPage Render:', {
-    loading,
-    postsCount: posts.length,
-    selectedCategory,
-    filteredPostsCount: filteredPosts.length,
-    selectedPostId
-  });
 
   // ─────────────────────────────────────────────
   // Loading
