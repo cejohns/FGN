@@ -735,8 +735,6 @@ export function BlogPostForm() {
     excerpt: '',
     content: '',
     featured_image: '',
-    post_type: 'blog',
-    video_url: '',
     category: 'General',
     author: 'FireStar Team',
     is_featured: false,
@@ -754,9 +752,18 @@ export function BlogPostForm() {
       const { error: insertError } = await supabase
         .from('blog_posts')
         .insert({
-          ...formData,
+          title: formData.title,
           slug,
+          excerpt: formData.excerpt,
+          content: formData.content,
+          featured_image: formData.featured_image,
+          category: formData.category,
+          author: formData.author,
+          is_featured: formData.is_featured,
+          post_type: 'blog',
+          status: 'published',
           published_at: new Date().toISOString(),
+          view_count: 0,
         });
 
       if (insertError) throw insertError;
@@ -767,8 +774,6 @@ export function BlogPostForm() {
         excerpt: '',
         content: '',
         featured_image: '',
-        post_type: 'blog',
-        video_url: '',
         category: 'General',
         author: 'FireStar Team',
         is_featured: false,
@@ -829,18 +834,6 @@ export function BlogPostForm() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">Post Type</label>
-          <select
-            value={formData.post_type}
-            onChange={(e) => setFormData({ ...formData, post_type: e.target.value })}
-            className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500"
-          >
-            <option value="blog">Blog</option>
-            <option value="vlog">Vlog</option>
-          </select>
-        </div>
-
-        <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">Category</label>
           <input
             type="text"
@@ -849,29 +842,16 @@ export function BlogPostForm() {
             className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500"
           />
         </div>
-      </div>
 
-      {formData.post_type === 'vlog' && (
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">Video URL (for Vlogs)</label>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Author</label>
           <input
-            type="url"
-            value={formData.video_url}
-            onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
-            placeholder="https://www.youtube.com/watch?v=..."
+            type="text"
+            value={formData.author}
+            onChange={(e) => setFormData({ ...formData, author: e.target.value })}
             className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500"
           />
         </div>
-      )}
-
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">Author</label>
-        <input
-          type="text"
-          value={formData.author}
-          onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-          className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500"
-        />
       </div>
 
       <div className="flex items-center">

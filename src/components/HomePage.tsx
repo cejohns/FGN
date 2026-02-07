@@ -274,7 +274,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
               >
                 <div className="aspect-video overflow-hidden">
                   <ImageWithFallback
-                    src={post.cover_image_url}
+                    src={post.featured_image}
                     alt={post.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />

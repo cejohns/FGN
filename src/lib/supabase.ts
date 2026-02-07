@@ -82,18 +82,16 @@ export interface BlogPost {
   slug: string;
   excerpt: string;
   content: string;
-  cover_image_url: string;
-  featured_image?: string;
-  post_type?: 'blog' | 'vlog';
-  video_url?: string;
-  category?: string;
-  author?: string;
-  published_at: string;
-  view_count: number;
-  is_featured?: boolean;
+  featured_image: string;
+  category: string;
+  author: string;
+  post_type: string;
+  is_featured: boolean;
   status: string;
+  published_at: string;
   created_at: string;
   updated_at: string;
+  view_count: number;
 }
 
 export interface Game {

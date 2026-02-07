@@ -1067,8 +1067,8 @@ const syncYouTubeNews = async () => {
                 className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-800 transition-colors"
               >
                 <div>
-                  <h3 className="text-lg font-bold text-white">Blog Posts & Vlogs</h3>
-                  <p className="text-sm text-gray-400">Create blog posts and video blogs</p>
+                  <h3 className="text-lg font-bold text-white">Blog Posts</h3>
+                  <p className="text-sm text-gray-400">Create blog posts</p>
                 </div>
                 {expandedSection === 'blog' ? (
                   <ChevronUp className="w-5 h-5 text-cyan-500" />
