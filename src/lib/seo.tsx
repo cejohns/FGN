@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { injectStructuredData, removeStructuredData } from './structuredData';
 
 export interface SEOMetadata {
   title: string;
@@ -9,6 +10,7 @@ export interface SEOMetadata {
   author?: string;
   publishedTime?: string;
   modifiedTime?: string;
+  structuredData?: object;
 }
 
 export function useSEO(metadata: SEOMetadata) {
@@ -66,8 +68,15 @@ export function useSEO(metadata: SEOMetadata) {
       element.content = content;
     });
 
+    if (metadata.structuredData) {
+      injectStructuredData(metadata.structuredData);
+    }
+
     return () => {
       document.title = baseTitle;
+      if (metadata.structuredData) {
+        removeStructuredData();
+      }
     };
   }, [metadata]);
 }
