@@ -5,31 +5,10 @@
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZS21FDCRR"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
-
-      // Enhanced gtag with debugging
-      function gtag(){
-        dataLayer.push(arguments);
-
-        // Debug logging
-        console.log('%c[GA Debug]', 'color: #4285f4; font-weight: bold;',
-          'Event sent:', arguments[0], arguments[1], arguments[2] || '');
-      }
-
+      function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-XZS21FDCRR', {
-        debug_mode: true,
-        send_page_view: true
-      });
 
-      // Log when GA script loads
-      console.log('%c[GA Debug]', 'color: #4285f4; font-weight: bold;',
-        'Google Analytics initialized with ID: G-XZS21FDCRR');
-
-      // Monitor dataLayer changes
-      window.addEventListener('load', function() {
-        console.log('%c[GA Debug]', 'color: #4285f4; font-weight: bold;',
-          'Page loaded. DataLayer:', window.dataLayer);
-      });
+      gtag('config', 'G-XZS21FDCRR');
     </script>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
