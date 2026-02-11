@@ -73,18 +73,18 @@ export default function Footer({ onNavigate }: FooterProps) {
         </div>
 
         <div className="border-t border-cyan-500/20 mt-8 pt-8 text-center text-gray-400 text-sm">
-          <p>
-            &copy; {new Date().getFullYear()} FireStar Gaming Network. All rights reserved.
+          <div className="flex items-center justify-center gap-4">
+            <p>&copy; {new Date().getFullYear()} FireStar Gaming Network. All rights reserved.</p>
             {onNavigate && (
               <button
                 onClick={() => onNavigate('admin')}
-                className="ml-4 text-xs text-gray-600 hover:text-cyan-400 transition-colors"
+                className="px-3 py-1 text-xs bg-slate-800 hover:bg-cyan-500 text-gray-300 hover:text-white rounded transition-colors"
                 title="Admin Panel (Ctrl+Shift+A)"
               >
                 Admin
               </button>
             )}
-          </p>
+          </div>
         </div>
       </div>
     </footer>
