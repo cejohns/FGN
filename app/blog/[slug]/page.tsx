@@ -36,10 +36,11 @@ async function getBlogPost(slug: string): Promise<BlogPost | null> {
   return data as BlogPost;
 }
 
-export async function generateMetadata(props: {
-  params: Promise<{ slug: string }>;
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
 }): Promise<Metadata> {
-  const params = await props.params;
   const post = await getBlogPost(params.slug);
 
   if (!post) {
@@ -103,10 +104,11 @@ function formatDate(date: string) {
   });
 }
 
-export default async function BlogPostPage(props: {
-  params: Promise<{ slug: string }>;
+export default async function BlogPostPage({
+  params,
+}: {
+  params: { slug: string };
 }) {
-  const params = await props.params;
   const post = await getBlogPost(params.slug);
 
   if (!post) {
