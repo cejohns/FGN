@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Clock, ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
+import Header from '../../components/Header';
 
 export const revalidate = 3600;
 
@@ -150,43 +151,13 @@ export default async function BlogPostPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <div className="min-h-screen bg-slate-900">
-        <header className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700/50 sticky top-0 z-50">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Link
-                  href="/"
-                  className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center"
-                >
-                  <span className="text-white font-bold text-xl">F</span>
-                </Link>
-                <h1 className="text-2xl font-extrabold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                  FireStar Gaming
-                </h1>
-              </div>
-              <nav className="hidden md:flex gap-6">
-                <Link
-                  href="/"
-                  className="text-slate-300 hover:text-cyan-400 transition-colors"
-                >
-                  Home
-                </Link>
-                <Link
-                  href="/blog"
-                  className="text-cyan-400 font-semibold"
-                >
-                  Blog
-                </Link>
-              </nav>
-            </div>
-          </div>
-        </header>
+      <div className="min-h-screen bg-fs-dark">
+        <Header currentPage="blog" />
 
         <main className="container mx-auto px-4 py-12 max-w-4xl">
           <Link
             href="/blog"
-            className="inline-flex items-center gap-2 text-slate-400 hover:text-cyan-400 transition-colors mb-8"
+            className="inline-flex items-center gap-2 text-fs-muted hover:text-fs-blue transition-colors mb-8"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Blog
@@ -205,45 +176,45 @@ export default async function BlogPostPage({
               </div>
             )}
 
-            <div className="flex items-center gap-2 text-slate-400 mb-4">
+            <div className="flex items-center gap-2 text-fs-muted mb-4">
               <Clock className="w-5 h-5" />
               <time dateTime={post.published_at || post.created_at}>
                 {formatDate(post.published_at || post.created_at)}
               </time>
             </div>
 
-            <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-6 leading-tight">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-fs-text mb-6 leading-tight">
               {post.title}
             </h1>
 
             {post.excerpt && (
-              <p className="text-xl text-slate-300 mb-8 leading-relaxed border-l-4 border-cyan-500 pl-6 italic">
+              <p className="text-xl text-fs-muted mb-8 leading-relaxed border-l-4 border-fs-blue pl-6 italic">
                 {post.excerpt}
               </p>
             )}
 
             <div
-              className="prose prose-invert prose-cyan max-w-none
-                prose-headings:text-white prose-headings:font-bold
+              className="prose prose-invert max-w-none
+                prose-headings:text-fs-text prose-headings:font-bold
                 prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6
                 prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-4
-                prose-p:text-slate-300 prose-p:text-lg prose-p:leading-relaxed prose-p:mb-6
-                prose-a:text-cyan-400 prose-a:no-underline hover:prose-a:text-cyan-300 hover:prose-a:underline
-                prose-strong:text-white prose-strong:font-bold
-                prose-ul:text-slate-300 prose-ul:text-lg
-                prose-ol:text-slate-300 prose-ol:text-lg
+                prose-p:text-fs-muted prose-p:text-lg prose-p:leading-relaxed prose-p:mb-6
+                prose-a:text-fs-blue prose-a:no-underline hover:prose-a:text-fs-blueGlow hover:prose-a:underline
+                prose-strong:text-fs-text prose-strong:font-bold
+                prose-ul:text-fs-muted prose-ul:text-lg
+                prose-ol:text-fs-muted prose-ol:text-lg
                 prose-li:mb-2
-                prose-blockquote:border-l-cyan-500 prose-blockquote:text-slate-300 prose-blockquote:italic
-                prose-code:text-cyan-400 prose-code:bg-slate-800 prose-code:px-2 prose-code:py-1 prose-code:rounded
-                prose-pre:bg-slate-800 prose-pre:border prose-pre:border-slate-700"
+                prose-blockquote:border-l-fs-blue prose-blockquote:text-fs-muted prose-blockquote:italic
+                prose-code:text-fs-blue prose-code:bg-fs-panel prose-code:px-2 prose-code:py-1 prose-code:rounded
+                prose-pre:bg-fs-panel prose-pre:border prose-pre:border-fs-dark"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
           </article>
 
-          <div className="mt-16 pt-8 border-t border-slate-700">
+          <div className="mt-16 pt-8 border-t border-fs-dark">
             <Link
               href="/blog"
-              className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors font-semibold"
+              className="inline-flex items-center gap-2 text-fs-blue hover:text-fs-blueGlow transition-colors font-semibold"
             >
               <ArrowLeft className="w-5 h-5" />
               View All Blog Posts
@@ -251,8 +222,8 @@ export default async function BlogPostPage({
           </div>
         </main>
 
-        <footer className="bg-slate-800/50 border-t border-slate-700/50 py-8 mt-16">
-          <div className="container mx-auto px-4 text-center text-slate-400">
+        <footer className="bg-fs-panel border-t border-fs-dark py-8 mt-16">
+          <div className="container mx-auto px-4 text-center text-fs-muted">
             <p>
               &copy; {new Date().getFullYear()} FireStar Gaming Network. All rights
               reserved.

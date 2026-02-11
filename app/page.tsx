@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Clock, Star, BookOpen } from 'lucide-react';
+import Header from './components/Header';
 
 interface BlogPost {
   id: string;
@@ -76,29 +77,8 @@ export default async function HomePage() {
   const { news, reviews, blogs } = await getFeaturedContent();
 
   return (
-    <div className="min-h-screen bg-slate-900">
-      <header className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700/50 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">F</span>
-              </div>
-              <h1 className="text-2xl font-extrabold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                FireStar Gaming
-              </h1>
-            </div>
-            <nav className="hidden md:flex gap-6">
-              <Link href="/" className="text-slate-300 hover:text-cyan-400 transition-colors">
-                Home
-              </Link>
-              <Link href="/blog" className="text-slate-300 hover:text-cyan-400 transition-colors">
-                Blog
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-fs-dark">
+      <Header currentPage="home" />
 
       <main className="container mx-auto px-4 py-12">
         <section className="mb-16 text-center max-w-4xl mx-auto">
@@ -229,8 +209,8 @@ export default async function HomePage() {
         )}
       </main>
 
-      <footer className="bg-slate-800/50 border-t border-slate-700/50 py-8">
-        <div className="container mx-auto px-4 text-center text-slate-400">
+      <footer className="bg-fs-panel border-t border-fs-dark py-8">
+        <div className="container mx-auto px-4 text-center text-fs-muted">
           <p>&copy; {new Date().getFullYear()} FireStar Gaming Network. All rights reserved.</p>
         </div>
       </footer>
