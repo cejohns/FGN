@@ -9,7 +9,7 @@ interface BlogPost {
   title: string;
   slug: string;
   excerpt: string;
-  cover_image: string;
+  featured_image: string;
   published_at: string;
 }
 
@@ -18,7 +18,7 @@ interface NewsArticle {
   title: string;
   slug: string;
   excerpt: string;
-  cover_image: string;
+  cover_image_url: string | null;
   published_at: string;
 }
 
@@ -28,7 +28,7 @@ interface GameReview {
   slug: string;
   score: number;
   excerpt: string;
-  cover_image: string;
+  cover_image_url: string | null;
   published_at: string;
 }
 
@@ -38,21 +38,21 @@ async function getFeaturedContent() {
   const [newsRes, reviewsRes, blogsRes] = await Promise.all([
     supabase
       .from('news_articles')
-      .select('id, title, slug, excerpt, cover_image, published_at')
+      .select('id, title, slug, excerpt, cover_image_url, published_at')
       .eq('status', 'published')
       .eq('is_featured', true)
       .order('published_at', { ascending: false })
       .limit(3),
     supabase
       .from('game_reviews')
-      .select('id, title, slug, score, excerpt, cover_image, published_at')
+      .select('id, title, slug, score, excerpt, cover_image_url, published_at')
       .eq('status', 'published')
       .eq('is_featured', true)
       .order('published_at', { ascending: false })
       .limit(3),
     supabase
       .from('blog_posts')
-      .select('id, title, slug, excerpt, cover_image, published_at')
+      .select('id, title, slug, excerpt, featured_image, published_at')
       .eq('status', 'published')
       .order('published_at', { ascending: false })
       .limit(3),
@@ -114,10 +114,10 @@ export default async function HomePage() {
                   href={`/blog/${blog.slug}`}
                   className="group bg-slate-800/50 backdrop-blur-sm rounded-xl overflow-hidden border border-slate-700/50 hover:border-cyan-500/50 transition-all hover:shadow-lg hover:shadow-cyan-500/20"
                 >
-                  {blog.cover_image && (
+                  {blog.featured_image && (
                     <div className="relative h-48 overflow-hidden">
                       <Image
-                        src={blog.cover_image}
+                        src={blog.featured_image}
                         alt={blog.title}
                         fill
                         className="object-cover group-hover:scale-110 transition-transform duration-300"
@@ -152,10 +152,10 @@ export default async function HomePage() {
                   key={review.id}
                   className="bg-slate-800/50 backdrop-blur-sm rounded-xl overflow-hidden border border-slate-700/50"
                 >
-                  {review.cover_image && (
+                  {review.cover_image_url && (
                     <div className="relative h-48">
                       <Image
-                        src={review.cover_image}
+                        src={review.cover_image_url}
                         alt={review.title}
                         fill
                         className="object-cover"
@@ -184,10 +184,10 @@ export default async function HomePage() {
                   key={article.id}
                   className="bg-slate-800/50 backdrop-blur-sm rounded-xl overflow-hidden border border-slate-700/50"
                 >
-                  {article.cover_image && (
+                  {article.cover_image_url && (
                     <div className="relative h-48">
                       <Image
-                        src={article.cover_image}
+                        src={article.cover_image_url}
                         alt={article.title}
                         fill
                         className="object-cover"
