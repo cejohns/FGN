@@ -11,7 +11,7 @@ interface BlogPost {
   title: string;
   slug: string;
   excerpt: string;
-  cover_image: string;
+  featured_image: string;
   published_at: string;
   created_at: string;
 }
@@ -36,7 +36,7 @@ async function getBlogPosts() {
 
   const { data, error } = await supabase
     .from('blog_posts')
-    .select('id, title, slug, excerpt, cover_image, published_at, created_at')
+    .select('id, title, slug, excerpt, featured_image, published_at, created_at')
     .eq('status', 'published')
     .order('published_at', { ascending: false });
 
@@ -115,10 +115,10 @@ export default async function BlogPage() {
                 href={`/blog/${post.slug}`}
                 className="group bg-slate-800/50 backdrop-blur-sm rounded-xl overflow-hidden border border-slate-700/50 hover:border-cyan-500/50 transition-all hover:shadow-lg hover:shadow-cyan-500/20 flex flex-col"
               >
-                {post.cover_image && (
+                {post.featured_image && (
                   <div className="relative h-56 overflow-hidden">
                     <Image
-                      src={post.cover_image}
+                      src={post.featured_image}
                       alt={post.title}
                       fill
                       className="object-cover group-hover:scale-110 transition-transform duration-300"

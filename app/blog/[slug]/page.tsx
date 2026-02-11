@@ -13,7 +13,7 @@ interface BlogPost {
   slug: string;
   excerpt: string;
   content: string;
-  cover_image: string;
+  featured_image: string;
   published_at: string;
   created_at: string;
   updated_at: string;
@@ -60,10 +60,10 @@ export async function generateMetadata({
       type: 'article',
       publishedTime: post.published_at || post.created_at,
       modifiedTime: post.updated_at,
-      images: post.cover_image
+      images: post.featured_image
         ? [
             {
-              url: post.cover_image,
+              url: post.featured_image,
               width: 1200,
               height: 630,
               alt: post.title,
@@ -76,7 +76,7 @@ export async function generateMetadata({
       card: 'summary_large_image',
       title: post.title,
       description: post.excerpt,
-      images: post.cover_image ? [post.cover_image] : [],
+      images: post.featured_image ? [post.featured_image] : [],
     },
   };
 }
@@ -122,7 +122,7 @@ export default async function BlogPostPage({
     '@type': 'Article',
     headline: post.title,
     description: post.excerpt,
-    image: post.cover_image || undefined,
+    image: post.featured_image || undefined,
     datePublished: post.published_at || post.created_at,
     dateModified: post.updated_at,
     author: {
@@ -193,10 +193,10 @@ export default async function BlogPostPage({
           </Link>
 
           <article>
-            {post.cover_image && (
+            {post.featured_image && (
               <div className="relative w-full h-96 rounded-2xl overflow-hidden mb-8">
                 <Image
-                  src={post.cover_image}
+                  src={post.featured_image}
                   alt={post.title}
                   fill
                   className="object-cover"

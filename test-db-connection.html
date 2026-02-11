@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Database Connection Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #fff;
+    }
+    .status {
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border-left: 4px solid;
+    }
+    .success { background: #1a3a1a; border-color: #00ff00; }
+    .error { background: #3a1a1a; border-color: #ff0000; }
+    .info { background: #1a1a3a; border-color: #00aaff; }
+    button {
+      background: #0066cc;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover { background: #0055aa; }
+    pre {
+      background: #2a2a2a;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+    }
+    h1 { color: #00aaff; }
+    h2 { color: #00ff88; margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <h1>🔌 Database Connection Test</h1>
+  <div id="results"></div>
+
+  <h2>Admin Login Test</h2>
+  <div>
+    <input type="email" id="email" placeholder="Email" value="cejohns3@gmail.com" style="padding: 10px; margin: 5px; width: 250px;">
+    <input type="password" id="password" placeholder="Password" value="admin123!" style="padding: 10px; margin: 5px; width: 250px;">
+    <button onclick="testLogin()">Test Login</button>
+  </div>
+  <div id="loginResult"></div>
+
+  <h2>Manual Tests</h2>
+  <button onclick="testConnection()">Test Connection</button>
+  <button onclick="checkTables()">Check Tables</button>
+  <button onclick="checkAdminUser()">Check Admin User</button>
+  <button onclick="testContentAccess()">Test Content Access</button>
+
+  <script>
+    const SUPABASE_URL = 'https://dyfzxamsobywypoyocwz.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5Znp4YW1zb2J5d3lwb3lvY3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwODg4MTYsImV4cCI6MjA3NTY2NDgxNn0.ax_tgvpWH0GRfSXTNcqnX5gVXnfiGjH8AweuOuVbrvw';
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function addResult(message, type = 'info') {
+      const div = document.createElement('div');
+      div.className = `status ${type}`;
+      div.innerHTML = message;
+      document.getElementById('results').appendChild(div);
+    }
+
+    function addLoginResult(message, type = 'info') {
+      const div = document.createElement('div');
+      div.className = `status ${type}`;
+      div.innerHTML = message;
+      document.getElementById('loginResult').innerHTML = '';
+      document.getElementById('loginResult').appendChild(div);
+    }
+
+    async function testConnection() {
+      addResult('🔄 Testing Supabase connection...', 'info');
+      try {
+        const { data, error } = await supabase.from('admin_users').select('count');
+        if (error) throw error;
+        addResult('✅ Connection successful!', 'success');
+        return true;
+      } catch (error) {
+        addResult(`❌ Connection failed: ${error.message}`, 'error');
+        return false;
+      }
+    }
+
+    async function checkTables() {
+      addResult('🔄 Checking database tables...', 'info');
+      const tables = [
+        'admin_users',
+        'blog_posts',
+        'news_articles',
+        'game_reviews',
+        'videos',
+        'gallery_images',
+        'guides',
+        'game_releases'
+      ];
+
+      for (const table of tables) {
+        try {
+          const { data, error } = await supabase.from(table).select('count', { count: 'exact', head: true });
+          if (error) throw error;
+          addResult(`✅ Table "${table}" exists (${data || 0} rows)`, 'success');
+        } catch (error) {
+          addResult(`❌ Table "${table}": ${error.message}`, 'error');
+        }
+      }
+    }
+
+    async function checkAdminUser() {
+      addResult('🔄 Checking for admin users...', 'info');
+      try {
+        const { data, error } = await supabase
+          .from('admin_users')
+          .select('*');
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          addResult(`✅ Found ${data.length} admin user(s):<pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+        } else {
+          addResult('⚠️ No admin users found. You need to run CREATE_FIRST_ADMIN.sql', 'error');
+        }
+      } catch (error) {
+        addResult(`❌ Error checking admin users: ${error.message}`, 'error');
+      }
+    }
+
+    async function testContentAccess() {
+      addResult('🔄 Testing content access...', 'info');
+
+      try {
+        const { data: news, error: newsError } = await supabase
+          .from('news_articles')
+          .select('id, title, status')
+          .limit(5);
+
+        if (newsError) throw newsError;
+        addResult(`✅ News Articles: ${news?.length || 0} articles accessible`, 'success');
+
+        const { data: reviews, error: reviewsError } = await supabase
+          .from('game_reviews')
+          .select('id, title, status')
+          .limit(5);
+
+        if (reviewsError) throw reviewsError;
+        addResult(`✅ Game Reviews: ${reviews?.length || 0} reviews accessible`, 'success');
+
+        const { data: blogs, error: blogsError } = await supabase
+          .from('blog_posts')
+          .select('id, title, status')
+          .limit(5);
+
+        if (blogsError) throw blogsError;
+        addResult(`✅ Blog Posts: ${blogs?.length || 0} posts accessible`, 'success');
+      } catch (error) {
+        addResult(`❌ Content access error: ${error.message}`, 'error');
+      }
+    }
+
+    async function testLogin() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      addLoginResult('🔄 Attempting login...', 'info');
+
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        if (error) throw error;
+
+        if (data.user) {
+          addLoginResult(`✅ Login successful!<br>User ID: ${data.user.id}<br>Email: ${data.user.email}`, 'success');
+
+          // Check admin_users table
+          const { data: adminData, error: adminError } = await supabase
+            .from('admin_users')
+            .select('*')
+            .eq('id', data.user.id)
+            .maybeSingle();
+
+          if (adminError) throw adminError;
+
+          if (adminData) {
+            addLoginResult(`✅ Login successful!<br>User: ${adminData.full_name}<br>Role: ${adminData.role}<br>Active: ${adminData.is_active}`, 'success');
+          } else {
+            addLoginResult('⚠️ User authenticated but not in admin_users table', 'error');
+          }
+        }
+      } catch (error) {
+        addLoginResult(`❌ Login failed: ${error.message}`, 'error');
+      }
+    }
+
+    // Run initial test
+    window.addEventListener('load', async () => {
+      await testConnection();
+    });
+  </script>
+</body>
+</html>
