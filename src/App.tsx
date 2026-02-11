@@ -22,12 +22,12 @@ function App() {
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+      if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
         e.preventDefault();
         setCurrentSection('admin');
         window.scrollTo(0, 0);
       }
-      if (e.ctrlKey && e.shiftKey && e.key === 'T') {
+      if (e.ctrlKey && e.shiftKey && (e.key === 'T' || e.key === 't')) {
         e.preventDefault();
         setCurrentSection('test');
         window.scrollTo(0, 0);

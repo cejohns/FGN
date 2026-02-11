@@ -76,13 +76,13 @@ export default function Footer({ onNavigate }: FooterProps) {
           <p>
             &copy; {new Date().getFullYear()} FireStar Gaming Network. All rights reserved.
             {onNavigate && (
-              <span
+              <button
                 onClick={() => onNavigate('admin')}
-                className="opacity-0 hover:opacity-100 cursor-pointer ml-2"
-                title="Admin Access"
+                className="ml-4 text-xs text-gray-600 hover:text-cyan-400 transition-colors"
+                title="Admin Panel (Ctrl+Shift+A)"
               >
-                •
-              </span>
+                Admin
+              </button>
             )}
           </p>
         </div>
