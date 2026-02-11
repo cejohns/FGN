@@ -35,12 +35,12 @@ export default function FgnHeader({ currentSection, onNavigate }: FgnHeaderProps
         </button>
 
         {/* RIGHT SIDE — MAIN NAV LINKS */}
-        <nav className="hidden md:flex items-center gap-6 text-sm">
+        <nav className="hidden lg:flex items-center gap-4 xl:gap-6 text-sm">
           {navItems.map((item) => (
             <button
               key={item.id}
               onClick={() => onNavigate(item.id)}
-              className={`fgn-nav-link transition-colors ${
+              className={`fgn-nav-link transition-colors whitespace-nowrap ${
                 currentSection === item.id
                   ? 'text-fs-blue font-medium fs-glow-blue'
                   : 'text-fs-muted hover:text-fs-blue'
@@ -57,7 +57,7 @@ export default function FgnHeader({ currentSection, onNavigate }: FgnHeaderProps
             const nav = document.getElementById('mobile-nav');
             nav?.classList.toggle('mobile-nav-open');
           }}
-          className="md:hidden text-fs-muted hover:text-fs-blue"
+          className="lg:hidden text-fs-muted hover:text-fs-blue"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -73,7 +73,7 @@ export default function FgnHeader({ currentSection, onNavigate }: FgnHeaderProps
       {/* Mobile Drawer */}
       <div
         id="mobile-nav"
-        className="mobile-nav md:hidden bg-fs-panel px-4 border-t border-fs-dark"
+        className="mobile-nav lg:hidden bg-fs-panel px-4 border-t border-fs-dark"
       >
         <nav className="flex flex-col gap-3 text-sm py-3">
           {navItems.map((item) => (
