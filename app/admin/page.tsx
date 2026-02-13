@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Shield, RefreshCw, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Eye, FileText, LogOut, User } from 'lucide-react';
 
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
 export default function AdminPage() {
   // ⚠️ TEMPORARY BYPASS - AUTHENTICATION DISABLED FOR TESTING ⚠️
   const [email] = useState('test@admin.com');
@@ -21,10 +24,10 @@ export default function AdminPage() {
     setResult(null);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/fetch-gaming-news`, {
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/fetch-gaming-news`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
           'Content-Type': 'application/json',
         },
       });
@@ -50,10 +53,10 @@ export default function AdminPage() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/sync-game-releases?source=${source}&days=90`,
+        `${SUPABASE_URL}/functions/v1/sync-game-releases?source=${source}&days=90`,
         {
           headers: {
-            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
           },
         }
       );
@@ -78,10 +81,10 @@ export default function AdminPage() {
     setResult(null);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/sync-platform-news`, {
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/sync-platform-news`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
           'Content-Type': 'application/json',
         },
       });
@@ -107,9 +110,9 @@ export default function AdminPage() {
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      const token = session?.access_token || SUPABASE_ANON_KEY;
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/sync-youtube-news`, {
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/sync-youtube-news`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
