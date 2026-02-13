@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Admin Login</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: #e2e8f0;
+    }
+    .container {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+      color: #22d3ee;
+      text-align: center;
+    }
+    .subtitle {
+      text-align: center;
+      color: #94a3b8;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #cbd5e1;
+      font-size: 14px;
+    }
+    input {
+      width: 100%;
+      padding: 12px 16px;
+      background: #0f172a;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+    input:focus {
+      outline: none;
+      border-color: #22d3ee;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #22d3ee 0%, #3b82f6 100%);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(34, 211, 238, 0.3);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .success {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid #22c55e;
+      color: #4ade80;
+    }
+    .error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid #ef4444;
+      color: #f87171;
+    }
+    .info {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid #3b82f6;
+      color: #60a5fa;
+    }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .link {
+      color: #22d3ee;
+      text-decoration: none;
+    }
+    .link:hover {
+      text-decoration: underline;
+    }
+    code {
+      background: #0f172a;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔐 Test Admin Login</h1>
+    <p class="subtitle">Quick credential verification tool</p>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input
+          type="email"
+          id="email"
+          placeholder="admin@example.com"
+          value="cejohns3@gmail.com"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          placeholder="Enter your password"
+          required
+        >
+      </div>
+
+      <button type="submit" id="submitBtn">
+        Test Login
+      </button>
+    </form>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://dyfzxamsobywypoyocwz.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5Znp4YW1zb2J5d3lwb3lvY3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwODg4MTYsImV4cCI6MjA3NTY2NDgxNn0.ax_tgvpWH0GRfSXTNcqnX5gVXnfiGjH8AweuOuVbrvw';
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const form = document.getElementById('loginForm');
+    const resultDiv = document.getElementById('result');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner"></span> Testing...';
+      resultDiv.innerHTML = '';
+
+      try {
+        // Step 1: Check if admin user exists
+        const { data: adminUser, error: adminError } = await supabase
+          .from('admin_users')
+          .select('*')
+          .eq('email', email)
+          .maybeSingle();
+
+        if (adminError) throw adminError;
+
+        if (!adminUser) {
+          resultDiv.innerHTML = `
+            <div class="result error">
+              <strong>❌ Admin Not Found</strong><br>
+              No admin user exists with email: <code>${email}</code><br><br>
+              <strong>To fix this:</strong><br>
+              1. Open <code>RESET_ADMIN_PASSWORD.sql</code><br>
+              2. Change the email and password<br>
+              3. Run it in Supabase SQL Editor
+            </div>
+          `;
+          return;
+        }
+
+        if (!adminUser.is_active) {
+          resultDiv.innerHTML = `
+            <div class="result error">
+              <strong>❌ Account Inactive</strong><br>
+              Admin account exists but is disabled.<br><br>
+              <strong>To fix this:</strong><br>
+              Run <code>RESET_ADMIN_PASSWORD.sql</code> to reactivate your account.
+            </div>
+          `;
+          return;
+        }
+
+        // Step 2: Test authentication
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (authError) {
+          resultDiv.innerHTML = `
+            <div class="result error">
+              <strong>❌ Wrong Password</strong><br>
+              Admin exists but password is incorrect.<br><br>
+              Error: ${authError.message}<br><br>
+              <strong>To fix this:</strong><br>
+              1. Open <code>RESET_ADMIN_PASSWORD.sql</code><br>
+              2. Set your email and a new password<br>
+              3. Run it in Supabase SQL Editor
+            </div>
+          `;
+          return;
+        }
+
+        // Success!
+        resultDiv.innerHTML = `
+          <div class="result success">
+            <strong>✅ Login Successful!</strong><br><br>
+            <strong>Email:</strong> ${email}<br>
+            <strong>Role:</strong> ${adminUser.role}<br>
+            <strong>User ID:</strong> ${authData.user.id}<br><br>
+            Your credentials are working! You can now:<br>
+            • Access <a href="/admin" class="link">/admin</a> page<br>
+            • Use <code>Ctrl+Shift+A</code> on main site
+          </div>
+        `;
+
+        // Sign out after test
+        await supabase.auth.signOut();
+
+      } catch (error) {
+        resultDiv.innerHTML = `
+          <div class="result error">
+            <strong>❌ Error</strong><br>
+            ${error.message}<br><br>
+            Check your Supabase connection and try again.
+          </div>
+        `;
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Test Login';
+      }
+    });
+  </script>
+</body>
+</html>
