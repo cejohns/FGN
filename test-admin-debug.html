@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login Debugger</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #fff;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .header h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+    .card {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 8px;
+      font-size: 14px;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      transition: all 0.3s;
+    }
+    input::placeholder {
+      color: rgba(255,255,255,0.5);
+    }
+    input:focus {
+      outline: none;
+      border-color: rgba(255,255,255,0.6);
+      background: rgba(255,255,255,0.15);
+    }
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+      margin-top: 10px;
+    }
+    .results {
+      margin-top: 30px;
+    }
+    .check {
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 15px;
+      border-left: 4px solid #64748b;
+    }
+    .check.success {
+      border-left-color: #10b981;
+      background: rgba(16,185,129,0.1);
+    }
+    .check.error {
+      border-left-color: #ef4444;
+      background: rgba(239,68,68,0.1);
+    }
+    .check.warning {
+      border-left-color: #f59e0b;
+      background: rgba(245,158,11,0.1);
+    }
+    .check-title {
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .check-message {
+      font-size: 14px;
+      line-height: 1.6;
+      opacity: 0.9;
+    }
+    .check-details {
+      font-size: 13px;
+      margin-top: 10px;
+      padding: 10px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+    }
+    .sql-fix {
+      background: rgba(0,0,0,0.3);
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+      overflow-x: auto;
+    }
+    .sql-fix pre {
+      margin: 0;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      color: #e2e8f0;
+    }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .icon {
+      font-size: 20px;
+    }
+    code {
+      background: rgba(0,0,0,0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔍 Admin Login Debugger</h1>
+      <p>Complete diagnostic and repair tool</p>
+    </div>
+
+    <div class="card">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input
+          type="email"
+          id="email"
+          placeholder="cejohns3@gmail.com"
+          value="cejohns3@gmail.com"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          placeholder="Enter password"
+          value="NewPassword123!"
+        >
+      </div>
+
+      <button class="btn" onclick="runFullDiagnostics()" id="diagBtn">
+        Run Full Diagnostics
+      </button>
+
+      <button class="btn btn-secondary" onclick="attemptLogin()" id="loginBtn">
+        Test Login
+      </button>
+    </div>
+
+    <div id="results" class="results"></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://dyfzxamsobywypoyocwz.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5Znp4YW1zb2J5d3lwb3lvY3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwODg4MTYsImV4cCI6MjA3NTY2NDgxNn0.ax_tgvpWH0GRfSXTNcqnX5gVXnfiGjH8AweuOuVbrvw';
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function runFullDiagnostics() {
+      const email = document.getElementById('email').value;
+      const resultsDiv = document.getElementById('results');
+      const btn = document.getElementById('diagBtn');
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Running diagnostics...';
+      resultsDiv.innerHTML = '';
+
+      const checks = [];
+
+      // 1. Connection Test
+      try {
+        const { error } = await supabase.from('admin_users').select('count', { count: 'exact', head: true });
+        checks.push({
+          title: 'Database Connection',
+          status: error ? 'error' : 'success',
+          message: error ? `Connection failed: ${error.message}` : 'Successfully connected to database'
+        });
+      } catch (error) {
+        checks.push({
+          title: 'Database Connection',
+          status: 'error',
+          message: 'Failed to connect: ' + error.message
+        });
+      }
+
+      // 2. Admin Users Table
+      try {
+        const { data, error } = await supabase.from('admin_users').select('id').limit(1);
+        if (error && error.code === '42P01') {
+          checks.push({
+            title: 'Admin Users Table',
+            status: 'error',
+            message: 'Table does not exist - migrations need to be run'
+          });
+        } else if (error) {
+          checks.push({
+            title: 'Admin Users Table',
+            status: 'error',
+            message: `Table error: ${error.message}`
+          });
+        } else {
+          checks.push({
+            title: 'Admin Users Table',
+            status: 'success',
+            message: 'Table exists and is accessible'
+          });
+        }
+      } catch (error) {
+        checks.push({
+          title: 'Admin Users Table',
+          status: 'error',
+          message: 'Error: ' + error.message
+        });
+      }
+
+      // 3. Auth User Lookup (this will fail due to RLS but shows if record exists)
+      try {
+        const { data, error } = await supabase
+          .from('admin_users')
+          .select('*')
+          .eq('email', email)
+          .maybeSingle();
+
+        if (error) {
+          if (error.code === 'PGRST116') {
+            checks.push({
+              title: 'Admin Record Lookup',
+              status: 'warning',
+              message: 'Cannot verify record due to RLS (Row Level Security)',
+              details: 'This is normal - RLS blocks unauthenticated queries'
+            });
+          } else {
+            checks.push({
+              title: 'Admin Record Lookup',
+              status: 'error',
+              message: `Lookup failed: ${error.message}`
+            });
+          }
+        } else if (!data) {
+          checks.push({
+            title: 'Admin Record Lookup',
+            status: 'error',
+            message: 'No admin record found for this email',
+            fix: generateCreateSQL(email)
+          });
+        } else {
+          checks.push({
+            title: 'Admin Record Lookup',
+            status: 'success',
+            message: `Admin record found: ${data.full_name}`,
+            details: `Role: ${data.role} | Active: ${data.is_active ? 'Yes' : 'No'}`
+          });
+        }
+      } catch (error) {
+        checks.push({
+          title: 'Admin Record Lookup',
+          status: 'warning',
+          message: 'Could not check admin record (likely due to RLS)',
+          details: error.message
+        });
+      }
+
+      displayResults(checks);
+      btn.disabled = false;
+      btn.innerHTML = 'Run Full Diagnostics';
+    }
+
+    async function attemptLogin() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const resultsDiv = document.getElementById('results');
+      const btn = document.getElementById('loginBtn');
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Testing login...';
+
+      const checks = [];
+
+      console.log('Attempting login with:', { email, password: '***' });
+
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        console.log('Login response:', { hasData: !!data, error });
+
+        if (error) {
+          if (error.message.includes('Invalid login credentials')) {
+            checks.push({
+              title: 'Login Test',
+              status: 'error',
+              message: '❌ Invalid Credentials',
+              details: 'Either the email or password is wrong, or the account doesn\'t exist',
+              fix: generateFixSQL(email, password)
+            });
+          } else if (error.message.includes('Email not confirmed')) {
+            checks.push({
+              title: 'Login Test',
+              status: 'error',
+              message: '❌ Email Not Confirmed',
+              details: 'Account exists but email needs to be confirmed',
+              fix: generateConfirmSQL(email)
+            });
+          } else {
+            checks.push({
+              title: 'Login Test',
+              status: 'error',
+              message: `❌ Login Failed: ${error.message}`,
+              fix: generateFixSQL(email, password)
+            });
+          }
+        } else {
+          checks.push({
+            title: 'Login Test',
+            status: 'success',
+            message: '✅ Login Successful!',
+            details: `User ID: ${data.user.id}<br>Email: ${data.user.email}<br>Confirmed: ${data.user.email_confirmed_at ? 'Yes' : 'No'}`
+          });
+
+          // Now check admin record
+          const { data: adminData, error: adminError } = await supabase
+            .from('admin_users')
+            .select('*')
+            .eq('id', data.user.id)
+            .maybeSingle();
+
+          if (adminError) {
+            checks.push({
+              title: 'Admin Record Check',
+              status: 'error',
+              message: `Cannot access admin record: ${adminError.message}`
+            });
+          } else if (!adminData) {
+            checks.push({
+              title: 'Admin Record Check',
+              status: 'error',
+              message: 'Auth successful but no admin record exists',
+              fix: generateCreateAdminRecordSQL(email, data.user.id)
+            });
+          } else {
+            checks.push({
+              title: 'Admin Record Check',
+              status: adminData.is_active ? 'success' : 'error',
+              message: adminData.is_active ? '✅ Admin record is active' : '❌ Admin record is INACTIVE',
+              details: `Name: ${adminData.full_name}<br>Role: ${adminData.role}<br>Active: ${adminData.is_active}`
+            });
+          }
+
+          // Sign out after test
+          await supabase.auth.signOut();
+        }
+      } catch (error) {
+        checks.push({
+          title: 'Login Test',
+          status: 'error',
+          message: `❌ Unexpected Error: ${error.message}`
+        });
+      }
+
+      displayResults(checks);
+      btn.disabled = false;
+      btn.innerHTML = 'Test Login';
+    }
+
+    function displayResults(checks) {
+      const resultsDiv = document.getElementById('results');
+      let html = '';
+
+      checks.forEach(check => {
+        const icon = check.status === 'success' ? '✅' : check.status === 'error' ? '❌' : '⚠️';
+        html += `
+          <div class="check ${check.status}">
+            <div class="check-title">
+              <span class="icon">${icon}</span>
+              ${check.title}
+            </div>
+            <div class="check-message">
+              ${check.message}
+            </div>
+            ${check.details ? `<div class="check-details">${check.details}</div>` : ''}
+            ${check.fix ? `<div class="sql-fix"><pre>${check.fix}</pre></div>` : ''}
+          </div>
+        `;
+      });
+
+      resultsDiv.innerHTML = html;
+    }
+
+    function generateCreateSQL(email) {
+      return `-- Create admin account in Supabase SQL Editor
+-- 1. Go to: https://supabase.com/dashboard/project/dyfzxamsobywypoyocwz/sql
+-- 2. Copy and paste FIX_ADMIN_NOW.sql
+-- 3. Edit the email and password at the top
+-- 4. Click Run`;
+    }
+
+    function generateFixSQL(email, password) {
+      return `-- Fix admin credentials
+-- 1. Open FIX_ADMIN_NOW.sql in your project
+-- 2. Edit these lines:
+--    target_email text := '${email}';
+--    new_password text := '${password}';
+-- 3. Copy the entire file
+-- 4. Go to: https://supabase.com/dashboard/project/dyfzxamsobywypoyocwz/sql
+-- 5. Paste and click Run`;
+    }
+
+    function generateConfirmSQL(email) {
+      return `-- Confirm email address
+UPDATE auth.users
+SET email_confirmed_at = NOW()
+WHERE email = '${email}';`;
+    }
+
+    function generateCreateAdminRecordSQL(email, userId) {
+      return `-- Create admin record
+INSERT INTO admin_users (id, email, full_name, role, is_active)
+VALUES ('${userId}', '${email}', 'Admin User', 'super_admin', true)
+ON CONFLICT (email) DO UPDATE SET is_active = true;`;
+    }
+  </script>
+</body>
+</html>
