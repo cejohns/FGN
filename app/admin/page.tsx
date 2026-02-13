@@ -1,183 +1,140 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Shield, LogOut } from 'lucide-react';
+import { Shield, RefreshCw, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Eye, FileText, LogOut, User } from 'lucide-react';
 
 export default function AdminPage() {
   // ⚠️ TEMPORARY BYPASS - AUTHENTICATION DISABLED FOR TESTING ⚠️
-  // TODO: Re-enable authentication before production
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // BYPASSED: was false
-  const [loading, setLoading] = useState(false); // BYPASSED: was true
-  const [email, setEmail] = useState('test@admin.com');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email] = useState('test@admin.com');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [aiTopic, setAiTopic] = useState('');
 
   const supabase = createClient();
 
-  useEffect(() => {
-    // checkAuth(); // BYPASSED FOR TESTING
-  }, []);
+  const fetchGamingNews = async () => {
+    setLoading(true);
+    setError(null);
+    setResult(null);
 
-  const checkAuth = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/fetch-gaming-news`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
-      if (user) {
-        const { data: adminUser } = await supabase
-          .from('admin_users')
-          .select('*')
-          .eq('email', user.email)
-          .maybeSingle();
+      const data = await response.json();
 
-        if (adminUser && adminUser.is_active) {
-          setIsLoggedIn(true);
-        }
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch gaming news');
       }
-    } catch (err) {
-      console.error('Auth check error:', err);
+
+      setResult(data);
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+  const syncReleases = async (source: 'demo' | 'igdb' | 'rawg' = 'demo') => {
+    setLoading(true);
+    setError(null);
+    setResult(null);
 
     try {
-      const { data: adminUser } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('email', email)
-        .maybeSingle();
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/sync-game-releases?source=${source}&days=90`,
+        {
+          headers: {
+            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+          },
+        }
+      );
 
-      if (!adminUser) {
-        setError('Invalid admin credentials');
-        return;
+      const data = await response.json();
+
+      if (data.success) {
+        setResult(data);
+      } else {
+        setError(data.error || 'Failed to sync releases');
       }
-
-      if (!adminUser.is_active) {
-        setError('Admin account is inactive');
-        return;
-      }
-
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (signInError) {
-        setError('Invalid email or password');
-        return;
-      }
-
-      await supabase.from('admin_users').update({
-        last_login: new Date().toISOString(),
-      }).eq('email', email);
-
-      setIsLoggedIn(true);
-    } catch (err) {
-      setError('Login failed. Please try again.');
-      console.error('Login error:', err);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setIsLoggedIn(false);
-    setEmail('');
-    setPassword('');
+  const syncPlatformNews = async () => {
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/sync-platform-news`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to sync platform news');
+      }
+
+      setResult(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-fs-dark flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-cyan-500 border-t-transparent"></div>
-      </div>
-    );
-  }
+  const syncYouTubeNews = async () => {
+    setLoading(true);
+    setError(null);
+    setResult(null);
 
-  if (!isLoggedIn) {
-    return (
-      <div className="min-h-screen bg-fs-dark flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <div className="bg-fs-panel border border-fs-dark rounded-2xl p-8 shadow-2xl">
-            <div className="flex items-center justify-center mb-8">
-              <div className="bg-cyan-500/10 p-4 rounded-full">
-                <Shield className="w-12 h-12 text-cyan-400" />
-              </div>
-            </div>
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-            <h1 className="text-3xl font-bold text-center text-white mb-2">
-              Admin Login
-            </h1>
-            <p className="text-center text-slate-400 mb-8">
-              Access the FireStar Gaming Network admin panel
-            </p>
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/sync-youtube-news`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ maxResults: 10 }),
+      });
 
-            <form onSubmit={handleLogin} className="space-y-6">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">
-                  Email Address
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 bg-fs-dark border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500 transition-colors"
-                  placeholder="admin@firestar.com"
-                  required
-                />
-              </div>
+      const data = await response.json();
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-2">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-fs-dark border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500 transition-colors"
-                  placeholder="Enter your password"
-                  required
-                />
-              </div>
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to sync YouTube news');
+      }
 
-              {error && (
-                <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm">
-                  {error}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold py-3 rounded-lg hover:shadow-lg hover:shadow-cyan-500/50 transition-all"
-              >
-                Sign In
-              </button>
-            </form>
-
-            <div className="mt-6 text-center">
-              <a
-                href="/"
-                className="text-cyan-400 hover:text-cyan-300 text-sm transition-colors"
-              >
-                ← Back to Home
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+      setResult(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-fs-dark">
-      <header className="bg-fs-panel border-b border-fs-dark">
+    <div className="min-h-screen bg-slate-950">
+      <header className="bg-slate-900 border-b border-slate-800">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -185,14 +142,16 @@ export default function AdminPage() {
               <h1 className="text-2xl font-bold text-white">Admin Panel</h1>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-slate-400 text-sm">{email}</span>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+              <div className="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-lg">
+                <User className="w-4 h-4 text-cyan-400" />
+                <span className="text-slate-300 text-sm">{email}</span>
+              </div>
+              <a
+                href="/"
+                className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
               >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </button>
+                Back to Site
+              </a>
             </div>
           </div>
         </div>
@@ -208,58 +167,130 @@ export default function AdminPage() {
       </div>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-fs-panel border border-fs-dark rounded-xl p-6">
-            <h3 className="text-lg font-semibold text-white mb-2">Content Management</h3>
-            <p className="text-slate-400 text-sm mb-4">Manage blog posts, news, reviews, and guides</p>
-            <a
-              href="/"
-              className="text-cyan-400 hover:text-cyan-300 text-sm font-medium transition-colors"
-            >
-              Go to full admin panel →
-            </a>
+        <div className="max-w-4xl mx-auto space-y-6">
+
+          {/* Game Releases Management */}
+          <div className="bg-gradient-to-r from-red-900/20 to-pink-900/20 border border-red-800 rounded-lg p-6">
+            <h2 className="text-xl font-bold text-white mb-3">Game Releases Management</h2>
+            <p className="text-slate-300 mb-4">
+              Manage upcoming game releases. Load demo data or sync with IGDB/RAWG APIs.
+            </p>
+            <div className="flex gap-3 mb-4">
+              <button
+                onClick={() => syncReleases('demo')}
+                disabled={loading}
+                className="flex-1 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                <span>{loading ? 'Loading...' : 'Load Demo Data'}</span>
+              </button>
+              <button
+                onClick={() => syncReleases('igdb')}
+                disabled={loading}
+                className="flex-1 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white font-bold py-3 px-6 rounded-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                <span>{loading ? 'Syncing...' : 'Sync IGDB'}</span>
+              </button>
+              <button
+                onClick={() => syncReleases('rawg')}
+                disabled={loading}
+                className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-3 px-6 rounded-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                <span>{loading ? 'Syncing...' : 'Sync RAWG'}</span>
+              </button>
+            </div>
           </div>
 
-          <div className="bg-fs-panel border border-fs-dark rounded-xl p-6">
-            <h3 className="text-lg font-semibold text-white mb-2">Media Library</h3>
-            <p className="text-slate-400 text-sm mb-4">Upload and manage images and videos</p>
-            <a
-              href="/"
-              className="text-cyan-400 hover:text-cyan-300 text-sm font-medium transition-colors"
+          {/* Platform News Sync */}
+          <div className="bg-gradient-to-r from-indigo-900/20 to-blue-900/20 border border-indigo-800 rounded-lg p-6">
+            <h2 className="text-xl font-bold text-white mb-3">Sync Platform News (RSS)</h2>
+            <p className="text-slate-300 mb-4">
+              Import official news from PlayStation, Xbox, and Nintendo RSS feeds.
+            </p>
+            <button
+              onClick={syncPlatformNews}
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              Access gallery →
-            </a>
+              <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+              <span>{loading ? 'Syncing...' : 'Sync Platform News'}</span>
+            </button>
           </div>
 
-          <div className="bg-fs-panel border border-fs-dark rounded-xl p-6">
-            <h3 className="text-lg font-semibold text-white mb-2">System Monitoring</h3>
-            <p className="text-slate-400 text-sm mb-4">View logs, cron jobs, and analytics</p>
-            <a
-              href="/"
-              className="text-cyan-400 hover:text-cyan-300 text-sm font-medium transition-colors"
+          {/* YouTube News Sync */}
+          <div className="bg-gradient-to-r from-rose-900/20 to-pink-900/20 border border-rose-800 rounded-lg p-6">
+            <h2 className="text-xl font-bold text-white mb-3">Sync YouTube Channel News</h2>
+            <p className="text-slate-300 mb-4">
+              Import latest videos from official gaming YouTube channels.
+            </p>
+            <button
+              onClick={syncYouTubeNews}
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              View dashboard →
-            </a>
+              <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+              <span>{loading ? 'Syncing...' : 'Sync YouTube News'}</span>
+            </button>
           </div>
-        </div>
 
-        <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-xl p-6">
-          <h2 className="text-xl font-bold text-white mb-3">Quick Access</h2>
-          <p className="text-slate-300 mb-4">
-            For the full admin panel with all content management features, use the keyboard shortcut{' '}
-            <kbd className="px-2 py-1 bg-fs-dark border border-slate-700 rounded text-cyan-400 font-mono text-sm">
-              Ctrl + Shift + A
-            </kbd>{' '}
-            on the main site, or access it via the home page after logging in here.
-          </p>
-          <div className="flex gap-3">
-            <a
-              href="/"
-              className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-cyan-500/50 transition-all"
+          {/* Gaming News */}
+          <div className="bg-gradient-to-r from-cyan-900/20 to-blue-900/20 border border-cyan-800 rounded-lg p-6">
+            <h2 className="text-xl font-bold text-white mb-3">Manual Content Update</h2>
+            <p className="text-slate-300 mb-4">
+              Fetch the latest gaming news from major gaming publications.
+            </p>
+            <button
+              onClick={fetchGamingNews}
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              Go to Main Site
-            </a>
+              <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+              <span>{loading ? 'Fetching...' : 'Fetch Latest Gaming News'}</span>
+            </button>
           </div>
+
+          {/* Error Display */}
+          {error && (
+            <div className="bg-red-900/20 border border-red-800 rounded-lg p-4 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-semibold text-red-400 mb-1">Error</h3>
+                <p className="text-red-300 text-sm">{error}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Success Display */}
+          {result && (
+            <div className="bg-green-900/20 border border-green-800 rounded-lg p-4">
+              <div className="flex items-start gap-3 mb-4">
+                <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-green-400 mb-1">Success!</h3>
+                  <p className="text-green-300 text-sm">{result.message}</p>
+                </div>
+              </div>
+              {result.inserted !== undefined && (
+                <div className="grid grid-cols-3 gap-4 text-center mt-4">
+                  <div className="bg-slate-800 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-cyan-400">{result.inserted}</div>
+                    <div className="text-xs text-slate-400">New Releases</div>
+                  </div>
+                  <div className="bg-slate-800 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-green-400">{result.updated || 0}</div>
+                    <div className="text-xs text-slate-400">Updated</div>
+                  </div>
+                  <div className="bg-slate-800 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-purple-400">{result.fetched || 0}</div>
+                    <div className="text-xs text-slate-400">Total Fetched</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
         </div>
       </main>
     </div>
