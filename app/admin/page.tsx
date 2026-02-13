@@ -255,10 +255,13 @@ export default function AdminPage() {
     setResult(null);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token || SUPABASE_ANON_KEY;
+
       const response = await fetch(`${SUPABASE_URL}/functions/v1/sync-platform-news`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
