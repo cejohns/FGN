@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Shield, RefreshCw, AlertCircle, CheckCircle, ChevronDown, ChevronUp, Eye, FileText, LogOut, User, Plus, Trash2 } from 'lucide-react';
+import { NewsManagement, ReviewsManagement } from '@/components/ContentManagement';
+import { GuidesManagement, VideosManagement, GalleryManagement } from '@/components/ContentManagement2';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -550,6 +552,41 @@ export default function AdminPage() {
               </div>
             )}
           </div>
+
+          {/* News Articles Management */}
+          <NewsManagement
+            supabase={supabase}
+            onSuccess={(msg) => setResult({ message: msg })}
+            onError={(msg) => setError(msg)}
+          />
+
+          {/* Game Reviews Management */}
+          <ReviewsManagement
+            supabase={supabase}
+            onSuccess={(msg) => setResult({ message: msg })}
+            onError={(msg) => setError(msg)}
+          />
+
+          {/* Guides & Tutorials Management */}
+          <GuidesManagement
+            supabase={supabase}
+            onSuccess={(msg) => setResult({ message: msg })}
+            onError={(msg) => setError(msg)}
+          />
+
+          {/* Videos Management */}
+          <VideosManagement
+            supabase={supabase}
+            onSuccess={(msg) => setResult({ message: msg })}
+            onError={(msg) => setError(msg)}
+          />
+
+          {/* Gallery Management */}
+          <GalleryManagement
+            supabase={supabase}
+            onSuccess={(msg) => setResult({ message: msg })}
+            onError={(msg) => setError(msg)}
+          />
 
           {/* Game Releases Management */}
           <div className="bg-gradient-to-r from-red-900/20 to-pink-900/20 border border-red-800 rounded-lg p-6">
