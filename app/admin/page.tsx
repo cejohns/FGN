@@ -5,16 +5,18 @@ import { createClient } from '@/lib/supabase/client';
 import { Shield, LogOut } from 'lucide-react';
 
 export default function AdminPage() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [email, setEmail] = useState('');
+  // ⚠️ TEMPORARY BYPASS - AUTHENTICATION DISABLED FOR TESTING ⚠️
+  // TODO: Re-enable authentication before production
+  const [isLoggedIn, setIsLoggedIn] = useState(true); // BYPASSED: was false
+  const [loading, setLoading] = useState(false); // BYPASSED: was true
+  const [email, setEmail] = useState('test@admin.com');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const supabase = createClient();
 
   useEffect(() => {
-    checkAuth();
+    // checkAuth(); // BYPASSED FOR TESTING
   }, []);
 
   const checkAuth = async () => {
@@ -195,6 +197,15 @@ export default function AdminPage() {
           </div>
         </div>
       </header>
+
+      {/* WARNING BANNER */}
+      <div className="bg-amber-500/20 border-y border-amber-500/50">
+        <div className="container mx-auto px-4 py-3">
+          <p className="text-amber-300 text-center font-semibold">
+            ⚠️ AUTHENTICATION TEMPORARILY DISABLED FOR TESTING - DO NOT USE IN PRODUCTION ⚠️
+          </p>
+        </div>
+      </div>
 
       <main className="container mx-auto px-4 py-8">
         <div className="grid md:grid-cols-3 gap-6 mb-8">
