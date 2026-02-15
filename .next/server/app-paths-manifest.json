@@ -4,5 +4,6 @@
   "/reviews/page": "app/reviews/page.js",
   "/guides/page": "app/guides/page.js",
   "/videos/page": "app/videos/page.js",
+  "/gallery/page": "app/gallery/page.js",
   "/blog/page": "app/blog/page.js"
 }
