@@ -1,7 +1,5 @@
 {
-  "/reviews/page": "app/reviews/page.js",
-  "/guides/page": "app/guides/page.js",
-  "/videos/page": "app/videos/page.js",
-  "/gallery/page": "app/gallery/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/page": "app/page.js",
   "/admin/page": "app/admin/page.js"
 }
