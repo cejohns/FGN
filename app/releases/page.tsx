@@ -10,11 +10,11 @@ interface GameRelease {
   title: string;
   slug: string;
   release_date: string;
-  cover_image: string;
+  cover_image_url: string;
   platform: string;
-  genre: string;
-  developer: string;
-  publisher: string;
+  genre?: string;
+  developer?: string;
+  publisher?: string;
 }
 
 /**
@@ -38,7 +38,7 @@ async function getUpcomingReleases(): Promise<GameRelease[]> {
     const { data, error } = await supabase
       .from('game_releases')
       .select(
-        'id, title, slug, release_date, cover_image, platform, genre, developer, publisher'
+        'id, title, slug, release_date, cover_image_url, platform'
       )
       .gte('release_date', today)
       .order('release_date', { ascending: true })
@@ -144,10 +144,10 @@ export default async function ReleasesPage() {
                       key={release.id}
                       className="group bg-slate-800/50 backdrop-blur-sm rounded-lg overflow-hidden border border-slate-700/50 hover:border-purple-500/50 transition-all hover:shadow-lg hover:shadow-purple-500/20"
                     >
-                      {release.cover_image && (
+                      {release.cover_image_url && (
                         <div className="relative h-48 overflow-hidden">
                           <Image
-                            src={release.cover_image}
+                            src={release.cover_image_url}
                             alt={release.title}
                             fill
                             className="object-cover group-hover:scale-110 transition-transform duration-300"
