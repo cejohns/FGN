@@ -3,6 +3,8 @@ import Header from '../components/Header';
 import Image from 'next/image';
 import { BookOpen, Clock, ArrowRight } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 interface Guide {
   id: string;
   title: string;

@@ -3,6 +3,8 @@ import Header from '../components/Header';
 import Image from 'next/image';
 import { Calendar, Clock } from 'lucide-react';
 
+export const revalidate = 3600;
+
 interface GameRelease {
   id: string;
   title: string;

@@ -3,6 +3,8 @@ import Header from '../components/Header';
 import Image from 'next/image';
 import { Play, Clock, Eye } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 interface Video {
   id: string;
   title: string;

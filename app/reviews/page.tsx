@@ -3,6 +3,8 @@ import Header from '../components/Header';
 import Image from 'next/image';
 import { Clock, Star } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 interface GameReview {
   id: string;
   game_title: string;

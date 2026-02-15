@@ -4,6 +4,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Clock, ArrowRight } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 interface NewsArticle {
   id: string;
   title: string;

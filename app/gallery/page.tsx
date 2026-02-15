@@ -3,6 +3,8 @@ import Header from '../components/Header';
 import Image from 'next/image';
 import { ImageIcon, Calendar } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 interface GalleryImage {
   id: string;
   title: string;
