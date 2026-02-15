@@ -1,9 +1,9 @@
+export const revalidate = 3600;
+
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import Header from '../components/Header';
 import Image from 'next/image';
 import { Calendar, Clock } from 'lucide-react';
-
-export const revalidate = 3600;
 
 interface GameRelease {
   id: string;
@@ -17,28 +17,50 @@ interface GameRelease {
   publisher: string;
 }
 
-async function getUpcomingReleases() {
-  const supabase = createServerSupabaseClient();
+/**
+ * Fetch upcoming releases safely.
+ * Prevents build/ISR failures if Supabase is unreachable (ENOTFOUND, DNS, etc).
+ */
+async function getUpcomingReleases(): Promise<GameRelease[]> {
+  try {
+    const supabase = createServerSupabaseClient();
 
-  const today = new Date().toISOString().split('T')[0];
+    // Use local date to avoid timezone edge-cases around midnight UTC
+    const now = new Date();
+    const today = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    )
+      .toISOString()
+      .split('T')[0];
 
-  const { data, error } = await supabase
-    .from('game_releases')
-    .select('id, title, slug, release_date, cover_image, platform, genre, developer, publisher')
-    .gte('release_date', today)
-    .order('release_date', { ascending: true })
-    .limit(50);
+    const { data, error } = await supabase
+      .from('game_releases')
+      .select(
+        'id, title, slug, release_date, cover_image, platform, genre, developer, publisher'
+      )
+      .gte('release_date', today)
+      .order('release_date', { ascending: true })
+      .limit(50);
 
-  if (error) {
-    console.error('Error fetching releases:', error);
+    if (error) {
+      console.error('Error fetching releases:', error.message);
+      return [];
+    }
+
+    return (data || []) as GameRelease[];
+  } catch (err) {
+    console.error('Supabase releases fetch failed:', err);
     return [];
   }
-
-  return (data || []) as GameRelease[];
 }
 
 function formatDate(date: string) {
-  return new Date(date).toLocaleDateString('en-US', {
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return 'TBD';
+
+  return d.toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
@@ -46,9 +68,15 @@ function formatDate(date: string) {
 }
 
 function getDaysUntilRelease(releaseDate: string) {
-  const today = new Date();
   const release = new Date(releaseDate);
-  const diffTime = release.getTime() - today.getTime();
+  if (Number.isNaN(release.getTime())) return 'TBD';
+
+  // Compare by local day to avoid timezone hour differences
+  const today = new Date();
+  const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const startOfRelease = new Date(release.getFullYear(), release.getMonth(), release.getDate());
+
+  const diffTime = startOfRelease.getTime() - startOfToday.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
   if (diffDays === 0) return 'Today';
@@ -63,11 +91,11 @@ function groupByMonth(releases: GameRelease[]) {
 
   releases.forEach((release) => {
     const date = new Date(release.release_date);
-    const monthYear = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    const monthYear = Number.isNaN(date.getTime())
+      ? 'TBD'
+      : date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
-    if (!grouped[monthYear]) {
-      grouped[monthYear] = [];
-    }
+    if (!grouped[monthYear]) grouped[monthYear] = [];
     grouped[monthYear].push(release);
   });
 
@@ -97,7 +125,9 @@ export default async function ReleasesPage() {
         {releases.length === 0 ? (
           <div className="text-center py-16">
             <Calendar className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-            <p className="text-slate-400 text-lg">No upcoming releases scheduled yet. Check back soon!</p>
+            <p className="text-slate-400 text-lg">
+              No upcoming releases scheduled yet. Check back soon!
+            </p>
           </div>
         ) : (
           <div className="space-y-12">
