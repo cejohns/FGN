@@ -205,7 +205,7 @@ export default function AdminPanel() {
     }
   };
 
-  const syncPlatformNews = async () => {
+  const syncPlatformNews = async (platform?: 'playstation' | 'xbox' | 'nintendo') => {
     setLoading(true);
     setError(null);
     setResult(null);
@@ -219,23 +219,24 @@ export default function AdminPanel() {
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ platform }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to sync platform news');
+        throw new Error(data.error || `Failed to sync ${platform || 'platform'} news`);
       }
 
       setResult(data);
     } catch (err: any) {
-      setError(err.message);
+      setError(`${platform ? platform.toUpperCase() : 'Platform'} Error: ${err.message}`);
     } finally {
       setLoading(false);
     }
   };
 
-const syncYouTubeNews = async () => {
+const syncYouTubeNews = async (channel?: 'playstation' | 'xbox' | 'nintendo') => {
   setLoading(true);
   setError(null);
   setResult(null);
@@ -254,21 +255,21 @@ const syncYouTubeNews = async () => {
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${session.access_token}`, // ✅ REAL JWT
+        Authorization: `Bearer ${session.access_token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ maxResults: 10 }),
+      body: JSON.stringify({ maxResults: 10, channel }),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || 'Failed to sync YouTube news');
+      throw new Error(data.error || `Failed to sync ${channel || 'YouTube'} news`);
     }
 
     setResult(data);
   } catch (err: any) {
-    setError(err.message);
+    setError(`${channel ? channel.toUpperCase() : 'YouTube'} Error: ${err.message}`);
   } finally {
     setLoading(false);
   }
@@ -495,13 +496,40 @@ const syncYouTubeNews = async () => {
             </ul>
           </div>
 
+          <div className="flex gap-3 mb-3">
+            <button
+              onClick={() => syncPlatformNews('playstation')}
+              disabled={loading}
+              className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-4 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <span className="text-sm">{loading ? 'Syncing...' : 'PlayStation'}</span>
+            </button>
+            <button
+              onClick={() => syncPlatformNews('xbox')}
+              disabled={loading}
+              className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 px-4 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <span className="text-sm">{loading ? 'Syncing...' : 'Xbox'}</span>
+            </button>
+            <button
+              onClick={() => syncPlatformNews('nintendo')}
+              disabled={loading}
+              className="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-3 px-4 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <span className="text-sm">{loading ? 'Syncing...' : 'Nintendo'}</span>
+            </button>
+          </div>
+
           <button
-            onClick={syncPlatformNews}
+            onClick={() => syncPlatformNews()}
             disabled={loading}
             className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
           >
             <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-            <span>{loading ? 'Syncing Platform News...' : 'Sync Platform News'}</span>
+            <span>{loading ? 'Syncing All...' : 'Sync All Platforms'}</span>
           </button>
         </div>
 
@@ -531,13 +559,40 @@ const syncYouTubeNews = async () => {
             </p>
           </div>
 
+          <div className="flex gap-3 mb-3">
+            <button
+              onClick={() => syncYouTubeNews('playstation')}
+              disabled={loading}
+              className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-4 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <span className="text-sm">{loading ? 'Syncing...' : 'PlayStation'}</span>
+            </button>
+            <button
+              onClick={() => syncYouTubeNews('xbox')}
+              disabled={loading}
+              className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 px-4 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <span className="text-sm">{loading ? 'Syncing...' : 'Xbox'}</span>
+            </button>
+            <button
+              onClick={() => syncYouTubeNews('nintendo')}
+              disabled={loading}
+              className="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-3 px-4 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <span className="text-sm">{loading ? 'Syncing...' : 'Nintendo'}</span>
+            </button>
+          </div>
+
           <button
-            onClick={syncYouTubeNews}
+            onClick={() => syncYouTubeNews()}
             disabled={loading}
             className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
           >
             <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-            <span>{loading ? 'Syncing YouTube Videos...' : 'Sync YouTube News'}</span>
+            <span>{loading ? 'Syncing All...' : 'Sync All Channels'}</span>
           </button>
         </div>
 

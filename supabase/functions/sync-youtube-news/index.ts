@@ -231,6 +231,43 @@ Deno.serve(async (req: Request) => {
 
     const body = await req.json().catch(() => ({}));
     const maxResults = body.maxResults || 10;
+    const requestedChannel = body.channel;
+
+    if (requestedChannel) {
+      const channel = YT_CHANNELS.find(c => c.label.toLowerCase() === requestedChannel.toLowerCase());
+
+      if (!channel) {
+        return new Response(
+          JSON.stringify({
+            ok: false,
+            error: `Unknown channel: ${requestedChannel}. Available channels: ${YT_CHANNELS.map(c => c.label.toLowerCase()).join(', ')}`,
+          }),
+          {
+            status: 400,
+            headers: {
+              ...corsHeaders,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+      }
+
+      const result = await importChannelVideos(supabase, youtubeApiKey, channel, maxResults);
+
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          imported: { [channel.label.toLowerCase()]: result },
+          message: `${channel.label}: Synced ${result.inserted} new videos, skipped ${result.skipped} duplicates`,
+        }),
+        {
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    }
 
     const results = await Promise.all(
       YT_CHANNELS.map((channel) =>
