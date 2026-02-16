@@ -1,11 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://dyfzxamsobywypoyocwz.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5Znp4YW1zb2J5d3lwb3lvY3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwODg4MTYsImV4cCI6MjA3NTY2NDgxNn0.ax_tgvpWH0GRfSXTNcqnX5gVXnfiGjH8AweuOuVbrvw';
+const supabaseUrl = typeof window !== 'undefined' && (window as any).VITE_SUPABASE_URL
+  ? (window as any).VITE_SUPABASE_URL
+  : process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dyfzxamsobywypoyocwz.supabase.co';
 
-console.log('🔌 Supabase Client Initialized');
-console.log('URL:', supabaseUrl);
-console.log('Key:', supabaseAnonKey ? '✓ Present' : '✗ Missing');
+const supabaseAnonKey = typeof window !== 'undefined' && (window as any).VITE_SUPABASE_ANON_KEY
+  ? (window as any).VITE_SUPABASE_ANON_KEY
+  : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5Znp4YW1zb2J5d3lwb3lvY3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwODg4MTYsImV4cCI6MjA3NTY2NDgxNn0.ax_tgvpWH0GRfSXTNcqnX5gVXnfiGjH8AweuOuVbrvw';
+
+if (typeof window !== 'undefined') {
+  console.log('🔌 Supabase Client Initialized');
+  console.log('URL:', supabaseUrl);
+  console.log('Key:', supabaseAnonKey ? '✓ Present' : '✗ Missing');
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {

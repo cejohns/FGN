@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
 import { Shield, Filter, Calendar, User, FileText, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface AuditLogEntry {
@@ -27,7 +26,11 @@ const ACTION_COLORS: Record<string, string> = {
   ai_generate: 'bg-pink-500/10 text-pink-400 border-pink-500/30',
 };
 
-export default function AuditLogDashboard() {
+interface AuditLogDashboardProps {
+  supabase: any;
+}
+
+export default function AuditLogDashboard({ supabase }: AuditLogDashboardProps) {
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAction, setSelectedAction] = useState<string>('all');
