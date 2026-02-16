@@ -1,26 +1,84 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = typeof window !== 'undefined' && (window as any).VITE_SUPABASE_URL
-  ? (window as any).VITE_SUPABASE_URL
-  : process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dyfzxamsobywypoyocwz.supabase.co';
+/**
+ * Get env vars safely in BOTH environments:
+ * - Vite: import.meta.env.VITE_*
+ * - Next: process.env.NEXT_PUBLIC_*
+ */
+function getEnv(key: string): string | undefined {
+  // Vite environment
+  try {
+    const viteEnv = (import.meta as any)?.env;
+    if (viteEnv && typeof viteEnv[key] === 'string') return viteEnv[key];
+  } catch {
+    // ignore
+  }
 
-const supabaseAnonKey = typeof window !== 'undefined' && (window as any).VITE_SUPABASE_ANON_KEY
-  ? (window as any).VITE_SUPABASE_ANON_KEY
-  : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5Znp4YW1zb2J5d3lwb3lvY3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwODg4MTYsImV4cCI6MjA3NTY2NDgxNn0.ax_tgvpWH0GRfSXTNcqnX5gVXnfiGjH8AweuOuVbrvw';
+  // Next environment (injected at build time)
+  try {
+    const nextEnv = (process as any)?.env;
+    if (nextEnv && typeof nextEnv[key] === 'string') return nextEnv[key];
+  } catch {
+    // ignore
+  }
 
-if (typeof window !== 'undefined') {
-  console.log('🔌 Supabase Client Initialized');
-  console.log('URL:', supabaseUrl);
-  console.log('Key:', supabaseAnonKey ? '✓ Present' : '✗ Missing');
+  return undefined;
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
+// Prefer Vite vars when running Vite, otherwise Next public vars
+const supabaseUrl =
+  getEnv('VITE_SUPABASE_URL') ||
+  getEnv('NEXT_PUBLIC_SUPABASE_URL') ||
+  '';
+
+const supabaseAnonKey =
+  getEnv('VITE_SUPABASE_ANON_KEY') ||
+  getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY') ||
+  '';
+
+// Fail fast so you don’t get weird auth-js lock errors
+if (!supabaseUrl) {
+  throw new Error(
+    'Missing Supabase URL. Set VITE_SUPABASE_URL (Vite) or NEXT_PUBLIC_SUPABASE_URL (Next).'
+  );
+}
+
+if (!supabaseAnonKey) {
+  throw new Error(
+    'Missing Supabase anon key. Set VITE_SUPABASE_ANON_KEY (Vite) or NEXT_PUBLIC_SUPABASE_ANON_KEY (Next).'
+  );
+}
+
+/**
+ * Singleton client (prevents multiple auth listeners / locks issues)
+ */
+declare global {
+  // eslint-disable-next-line no-var
+  var __fgn_supabase__: SupabaseClient | undefined;
+}
+
+export const supabase: SupabaseClient =
+  globalThis.__fgn_supabase__ ??
+  createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true,
+    },
+  });
+
+if (!globalThis.__fgn_supabase__) {
+  globalThis.__fgn_supabase__ = supabase;
+
+  // Optional: safe debug message (no secrets)
+  if (typeof window !== 'undefined') {
+    console.log('🔌 Supabase client ready:', supabaseUrl);
   }
-});
+}
+
+/* =========================
+   Types (unchanged)
+========================= */
 
 export interface NewsArticle {
   id: string;
@@ -150,5 +208,4 @@ export interface Guide {
   is_featured: boolean;
   published_at: string;
   created_at: string;
-  updated_at: string;
 }
