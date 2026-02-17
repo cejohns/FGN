@@ -4,6 +4,8 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Clock, Star, BookOpen } from 'lucide-react';
 import Header from './components/Header';
 
+export const dynamic = 'force-dynamic';
+
 interface BlogPost {
   id: string;
   title: string;

@@ -15,21 +15,39 @@ import SupabaseTest from './components/SupabaseTest';
 import { useAuth } from './lib/auth';
 import { analytics } from './lib/analytics';
 
+type Section =
+  | 'home'
+  | 'news'
+  | 'reviews'
+  | 'videos'
+  | 'gallery'
+  | 'blog'
+  | 'guides'
+  | 'releases'
+  | 'admin'
+  | 'test';
+
 function App() {
-  const [currentSection, setCurrentSection] = useState('home');
+  const [currentSection, setCurrentSection] = useState<Section>('home');
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>(undefined);
   const { isAdmin, loading } = useAuth();
 
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
+      // Ctrl + Shift + A => Admin
       if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
         e.preventDefault();
         setCurrentSection('admin');
+        setSelectedItemId(undefined);
         window.scrollTo(0, 0);
       }
+
+      // Ctrl + Shift + T => Test
       if (e.ctrlKey && e.shiftKey && (e.key === 'T' || e.key === 't')) {
         e.preventDefault();
         setCurrentSection('test');
+        setSelectedItemId(undefined);
         window.scrollTo(0, 0);
       }
     };
@@ -40,7 +58,7 @@ function App() {
 
   // Track page views when section changes
   useEffect(() => {
-    const pageTitles: Record<string, string> = {
+    const pageTitles: Record<Section, string> = {
       home: 'Home',
       news: 'Gaming News',
       reviews: 'Game Reviews',
@@ -49,15 +67,32 @@ function App() {
       blog: 'Blog',
       guides: 'Gaming Guides',
       releases: 'Release Calendar',
-      admin: 'Admin Panel'
+      admin: 'Admin Panel',
+      test: 'Supabase Test',
     };
 
-    const pageTitle = pageTitles[currentSection] || currentSection;
+    const pageTitle = pageTitles[currentSection] ?? currentSection;
     analytics.pageView(`/${currentSection}`, `FireStar Gaming Network - ${pageTitle}`);
   }, [currentSection]);
 
   const handleNavigate = (section: string, itemId?: string) => {
-    setCurrentSection(section);
+    // Only allow known sections (prevents accidental typos from components)
+    const safeSection = ([
+      'home',
+      'news',
+      'reviews',
+      'videos',
+      'gallery',
+      'blog',
+      'guides',
+      'releases',
+      'admin',
+      'test',
+    ] as const).includes(section as Section)
+      ? (section as Section)
+      : 'home';
+
+    setCurrentSection(safeSection);
     setSelectedItemId(itemId);
     window.scrollTo(0, 0);
   };
@@ -83,16 +118,33 @@ function App() {
 
       <main className="flex-grow container mx-auto px-4 py-8">
         {currentSection === 'home' && <HomePage onNavigate={handleNavigate} />}
-        {currentSection === 'news' && <NewsPage selectedArticleId={selectedItemId} onBack={handleBack} />}
-        {currentSection === 'reviews' && <ReviewsPage selectedReviewId={selectedItemId} onBack={handleBack} />}
-        {currentSection === 'releases' && <ReleaseCalendarPage selectedGameId={selectedItemId} onBack={handleBack} />}
-        {currentSection === 'videos' && <VideosPage selectedVideoId={selectedItemId} onBack={handleBack} />}
-        {currentSection === 'gallery' && <GalleryPage />}
-        {currentSection === 'blog' && <BlogPage selectedPostId={selectedItemId} onBack={handleBack} />}
-        {currentSection === 'guides' && <GuidesPage />}
-        {currentSection === 'admin' && (
-          isAdmin ? <AdminPanel /> : <AdminLogin onNavigate={handleNavigate} />
+
+        {currentSection === 'news' && (
+          <NewsPage selectedArticleId={selectedItemId} onBack={handleBack} />
         )}
+
+        {currentSection === 'reviews' && (
+          <ReviewsPage selectedReviewId={selectedItemId} onBack={handleBack} />
+        )}
+
+        {currentSection === 'releases' && (
+          <ReleaseCalendarPage selectedGameId={selectedItemId} onBack={handleBack} />
+        )}
+
+        {currentSection === 'videos' && (
+          <VideosPage selectedVideoId={selectedItemId} onBack={handleBack} />
+        )}
+
+        {currentSection === 'gallery' && <GalleryPage />}
+
+        {currentSection === 'blog' && (
+          <BlogPage selectedPostId={selectedItemId} onBack={handleBack} />
+        )}
+
+        {currentSection === 'guides' && <GuidesPage />}
+
+        {currentSection === 'admin' && (isAdmin ? <AdminPanel /> : <AdminLogin onNavigate={handleNavigate} />)}
+
         {currentSection === 'test' && <SupabaseTest />}
       </main>
 

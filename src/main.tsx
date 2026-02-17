@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
-import { AuthProvider } from './lib/auth.tsx';
+import { AuthProvider } from './lib/auth';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import { analytics } from './lib/analytics';
 import './index.css';
@@ -14,10 +14,10 @@ console.log('Run analytics.debugDataLayer() to see all events');
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ErrorBoundary>
-      <AuthProvider>
+    <AuthProvider>
+      <ErrorBoundary>
         <App />
-      </AuthProvider>
-    </ErrorBoundary>
+      </ErrorBoundary>
+    </AuthProvider>
   </StrictMode>
 );

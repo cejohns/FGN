@@ -1,26 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
+    domains: [
+      "images.igdb.com",
+      "media.rawg.io",
+      "i.ytimg.com",
+      "images.pexels.com",
+      "static-cdn.jtvnw.net",
+    ],
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'images.igdb.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'media.rawg.io',
-      },
-      {
-        protocol: 'https',
-        hostname: 'i.ytimg.com',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.supabase.co',
-      },
-      {
-        protocol: 'https',
-        hostname: 'static-cdn.jtvnw.net',
+        protocol: "https",
+        hostname: "**.supabase.co",
       },
     ],
   },
