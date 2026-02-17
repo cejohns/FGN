@@ -285,3 +285,4 @@ For issues or questions:
 ---
 
 **Built with** React, TypeScript, Tailwind CSS, and Supabase
+
