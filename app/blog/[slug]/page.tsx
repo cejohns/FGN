@@ -7,7 +7,9 @@ import type { Metadata } from 'next';
 import Header from '../../components/Header';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 3600;
+export const fetchCache = 'force-no-store';
+// IMPORTANT: remove revalidate while deploying
+// export const revalidate = 3600;
 
 interface BlogPost {
   id: string;
@@ -25,9 +27,10 @@ function createPublicSupabaseClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+  // ✅ never throw here (throws can still break metadata/build paths in edge cases)
   if (!url || !anon) {
-    // Throwing here is okay because we catch in callers and return null/[]
-    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY');
+    console.error('Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY');
+    return null;
   }
 
   return createClient(url, anon, {
@@ -38,6 +41,7 @@ function createPublicSupabaseClient() {
 async function getBlogPost(slug: string): Promise<BlogPost | null> {
   try {
     const supabase = createPublicSupabaseClient();
+    if (!supabase) return null;
 
     const { data, error } = await supabase
       .from('blog_posts')
@@ -63,17 +67,18 @@ export async function generateMetadata({
 }: {
   params: { slug: string };
 }): Promise<Metadata> {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.firestargn.com';
+
+  // ✅ keep metadata safe even if DB is down
   const post = await getBlogPost(params.slug);
 
   if (!post) {
     return {
-      title: 'Post Not Found - FireStar Gaming Network',
-      description: 'The requested post could not be found.',
+      title: 'FireStar Gaming Network',
+      description: `Article: ${params.slug}`,
+      openGraph: { url: `${baseUrl}/blog/${params.slug}` },
     };
   }
-
-  const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || 'https://www.firestargn.com';
 
   return {
     title: `${post.title} - FireStar Gaming Network`,
@@ -85,14 +90,7 @@ export async function generateMetadata({
       publishedTime: post.published_at || post.created_at,
       modifiedTime: post.updated_at,
       images: post.featured_image
-        ? [
-            {
-              url: post.featured_image,
-              width: 1200,
-              height: 630,
-              alt: post.title,
-            },
-          ]
+        ? [{ url: post.featured_image, width: 1200, height: 630, alt: post.title }]
         : [],
       url: `${baseUrl}/blog/${post.slug}`,
     },
@@ -105,30 +103,8 @@ export async function generateMetadata({
   };
 }
 
-export async function generateStaticParams() {
-  try {
-    const supabase = createPublicSupabaseClient();
-
-    const { data, error } = await supabase
-      .from('blog_posts')
-      .select('slug')
-      .eq('status', 'published');
-
-    if (error) {
-      console.error('generateStaticParams error:', error);
-      return [];
-    }
-
-    if (!data?.length) return [];
-
-    return data
-      .filter((p) => typeof p.slug === 'string' && p.slug.length > 0)
-      .map((p) => ({ slug: p.slug }));
-  } catch (e) {
-    console.error('generateStaticParams failed:', e);
-    return [];
-  }
-}
+// ✅ REMOVE generateStaticParams completely to stop Vercel build from collecting page data
+// export async function generateStaticParams() { ... }
 
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString('en-US', {
@@ -148,8 +124,7 @@ export default async function BlogPostPage({
   if (!post) notFound();
   const p = post;
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || 'https://www.firestargn.com';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.firestargn.com';
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -257,10 +232,7 @@ export default async function BlogPostPage({
 
         <footer className="bg-fs-panel border-t border-fs-dark py-8 mt-16">
           <div className="container mx-auto px-4 text-center text-fs-muted">
-            <p>
-              &copy; {new Date().getFullYear()} FireStar Gaming Network. All
-              rights reserved.
-            </p>
+            <p>&copy; {new Date().getFullYear()} FireStar Gaming Network. All rights reserved.</p>
           </div>
         </footer>
       </div>
