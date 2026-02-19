@@ -6,6 +6,10 @@ import { Clock, ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import Header from '../../components/Header';
 
+// Render on-request so builds don't fail if Supabase/env/RLS hiccup at build time
+export const dynamic = 'force-dynamic';
+
+// Cache for 1 hour
 export const revalidate = 3600;
 
 interface BlogPost {
@@ -31,6 +35,7 @@ async function getBlogPost(slug: string): Promise<BlogPost | null> {
     .maybeSingle();
 
   if (error || !data) {
+    if (error) console.error('getBlogPost error:', error);
     return null;
   }
 
@@ -46,11 +51,13 @@ export async function generateMetadata({
 
   if (!post) {
     return {
-      title: 'Post Not Found',
+      title: 'Post Not Found - FireStar Gaming Network',
+      description: 'The requested post could not be found.',
     };
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://firestargamingnetwork.com';
+  const baseUrl =
+    process.env.NEXT_PUBLIC_SITE_URL || 'https://www.firestargn.com';
 
   return {
     title: `${post.title} - FireStar Gaming Network`,
@@ -82,19 +89,30 @@ export async function generateMetadata({
   };
 }
 
+// Critical: never crash build/route generation if Supabase errors
 export async function generateStaticParams() {
-  const supabase = createServerSupabaseClient();
+  try {
+    const supabase = createServerSupabaseClient();
 
-  const { data } = await supabase
-    .from('blog_posts')
-    .select('slug')
-    .eq('status', 'published');
+    const { data, error } = await supabase
+      .from('blog_posts')
+      .select('slug')
+      .eq('status', 'published');
 
-  if (!data) return [];
+    if (error) {
+      console.error('generateStaticParams error:', error);
+      return [];
+    }
 
-  return data.map((post) => ({
-    slug: post.slug,
-  }));
+    if (!data?.length) return [];
+
+    return data
+      .filter((p) => typeof p.slug === 'string' && p.slug.length > 0)
+      .map((post) => ({ slug: post.slug }));
+  } catch (e) {
+    console.error('generateStaticParams failed:', e);
+    return [];
+  }
 }
 
 function formatDate(date: string) {
@@ -112,20 +130,22 @@ export default async function BlogPostPage({
 }) {
   const post = await getBlogPost(params.slug);
 
-  if (!post) {
-    notFound();
-  }
+  if (!post) notFound();
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://firestargamingnetwork.com';
+  // TS: from here down, use `p` so it's guaranteed non-null
+  const p = post;
+
+  const baseUrl =
+    process.env.NEXT_PUBLIC_SITE_URL || 'https://www.firestargn.com';
 
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Article',
-    headline: post.title,
-    description: post.excerpt,
-    image: post.featured_image || undefined,
-    datePublished: post.published_at || post.created_at,
-    dateModified: post.updated_at,
+    headline: p.title,
+    description: p.excerpt,
+    image: p.featured_image || undefined,
+    datePublished: p.published_at || p.created_at,
+    dateModified: p.updated_at,
     author: {
       '@type': 'Organization',
       name: 'FireStar Gaming Network',
@@ -140,7 +160,7 @@ export default async function BlogPostPage({
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `${baseUrl}/blog/${post.slug}`,
+      '@id': `${baseUrl}/blog/${p.slug}`,
     },
   };
 
@@ -164,11 +184,11 @@ export default async function BlogPostPage({
           </Link>
 
           <article>
-            {post.featured_image && (
+            {p.featured_image && (
               <div className="relative w-full h-96 rounded-2xl overflow-hidden mb-8">
                 <Image
-                  src={post.featured_image}
-                  alt={post.title}
+                  src={p.featured_image}
+                  alt={p.title}
                   fill
                   className="object-cover"
                   priority
@@ -178,18 +198,18 @@ export default async function BlogPostPage({
 
             <div className="flex items-center gap-2 text-fs-muted mb-4">
               <Clock className="w-5 h-5" />
-              <time dateTime={post.published_at || post.created_at}>
-                {formatDate(post.published_at || post.created_at)}
+              <time dateTime={p.published_at || p.created_at}>
+                {formatDate(p.published_at || p.created_at)}
               </time>
             </div>
 
             <h1 className="text-4xl md:text-5xl font-extrabold text-fs-text mb-6 leading-tight">
-              {post.title}
+              {p.title}
             </h1>
 
-            {post.excerpt && (
+            {p.excerpt && (
               <p className="text-xl text-fs-muted mb-8 leading-relaxed border-l-4 border-fs-blue pl-6 italic">
-                {post.excerpt}
+                {p.excerpt}
               </p>
             )}
 
@@ -207,7 +227,7 @@ export default async function BlogPostPage({
                 prose-blockquote:border-l-fs-blue prose-blockquote:text-fs-muted prose-blockquote:italic
                 prose-code:text-fs-blue prose-code:bg-fs-panel prose-code:px-2 prose-code:py-1 prose-code:rounded
                 prose-pre:bg-fs-panel prose-pre:border prose-pre:border-fs-dark"
-              dangerouslySetInnerHTML={{ __html: post.content }}
+              dangerouslySetInnerHTML={{ __html: p.content }}
             />
           </article>
 
@@ -225,8 +245,8 @@ export default async function BlogPostPage({
         <footer className="bg-fs-panel border-t border-fs-dark py-8 mt-16">
           <div className="container mx-auto px-4 text-center text-fs-muted">
             <p>
-              &copy; {new Date().getFullYear()} FireStar Gaming Network. All rights
-              reserved.
+              &copy; {new Date().getFullYear()} FireStar Gaming Network. All
+              rights reserved.
             </p>
           </div>
         </footer>
