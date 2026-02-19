@@ -1,9 +1,14 @@
-export const revalidate = 3600;
-
-import { createServerSupabaseClient } from '@/lib/supabase/server';
 import Header from '../components/Header';
 import Image from 'next/image';
 import { Calendar, Clock } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
+
+// ✅ Make build-safe on Vercel (no prerender with request-scoped cookies)
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
+// (Optional) re-enable later after production is stable
+// export const revalidate = 3600;
 
 interface GameRelease {
   id: string;
@@ -17,35 +22,44 @@ interface GameRelease {
   publisher?: string;
 }
 
+function createPublicSupabaseClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !anon) {
+    console.error('Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY');
+    return null;
+  }
+
+  return createClient(url, anon, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
+
 /**
  * Fetch upcoming releases safely.
- * Prevents build/ISR failures if Supabase is unreachable (ENOTFOUND, DNS, etc).
+ * Prevents build/runtime failures if Supabase is unreachable.
  */
 async function getUpcomingReleases(): Promise<GameRelease[]> {
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = createPublicSupabaseClient();
+    if (!supabase) return [];
 
     // Use local date to avoid timezone edge-cases around midnight UTC
     const now = new Date();
-    const today = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate()
-    )
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
       .toISOString()
       .split('T')[0];
 
     const { data, error } = await supabase
       .from('game_releases')
-      .select(
-        'id, title, slug, release_date, cover_image_url, platform'
-      )
+      .select('id, title, slug, release_date, cover_image_url, platform, genre, developer, publisher')
       .gte('release_date', today)
       .order('release_date', { ascending: true })
       .limit(50);
 
     if (error) {
-      console.error('Error fetching releases:', error.message);
+      console.error('Error fetching releases:', error);
       return [];
     }
 
@@ -71,7 +85,6 @@ function getDaysUntilRelease(releaseDate: string) {
   const release = new Date(releaseDate);
   if (Number.isNaN(release.getTime())) return 'TBD';
 
-  // Compare by local day to avoid timezone hour differences
   const today = new Date();
   const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   const startOfRelease = new Date(release.getFullYear(), release.getMonth(), release.getDate());
@@ -87,7 +100,7 @@ function getDaysUntilRelease(releaseDate: string) {
 }
 
 function groupByMonth(releases: GameRelease[]) {
-  const grouped: { [key: string]: GameRelease[] } = {};
+  const grouped: Record<string, GameRelease[]> = {};
 
   releases.forEach((release) => {
     const date = new Date(release.release_date);
@@ -125,9 +138,7 @@ export default async function ReleasesPage() {
         {releases.length === 0 ? (
           <div className="text-center py-16">
             <Calendar className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-            <p className="text-slate-400 text-lg">
-              No upcoming releases scheduled yet. Check back soon!
-            </p>
+            <p className="text-slate-400 text-lg">No upcoming releases scheduled yet. Check back soon!</p>
           </div>
         ) : (
           <div className="space-y-12">
