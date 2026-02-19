@@ -1,3 +1,15 @@
 {
-  "/page": "app/page.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/robots.txt/route": "app/robots.txt/route.js",
+  "/blog/page": "app/blog/page.js",
+  "/gallery/page": "app/gallery/page.js",
+  "/guides/page": "app/guides/page.js",
+  "/blog/[slug]/page": "app/blog/[slug]/page.js",
+  "/reviews/page": "app/reviews/page.js",
+  "/news/page": "app/news/page.js",
+  "/page": "app/page.js",
+  "/releases/page": "app/releases/page.js",
+  "/videos/page": "app/videos/page.js",
+  "/sitemap.xml/route": "app/sitemap.xml/route.js"
 }
