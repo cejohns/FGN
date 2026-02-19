@@ -1,15 +1,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import { Clock, ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import Header from '../../components/Header';
 
-// Render on-request so builds don't fail if Supabase/env/RLS hiccup at build time
 export const dynamic = 'force-dynamic';
-
-// Cache for 1 hour
 export const revalidate = 3600;
 
 interface BlogPost {
@@ -24,22 +21,41 @@ interface BlogPost {
   updated_at: string;
 }
 
-async function getBlogPost(slug: string): Promise<BlogPost | null> {
-  const supabase = createServerSupabaseClient();
+function createPublicSupabaseClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  const { data, error } = await supabase
-    .from('blog_posts')
-    .select('*')
-    .eq('slug', slug)
-    .eq('status', 'published')
-    .maybeSingle();
-
-  if (error || !data) {
-    if (error) console.error('getBlogPost error:', error);
-    return null;
+  if (!url || !anon) {
+    // Throwing here is okay because we catch in callers and return null/[]
+    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY');
   }
 
-  return data as BlogPost;
+  return createClient(url, anon, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
+
+async function getBlogPost(slug: string): Promise<BlogPost | null> {
+  try {
+    const supabase = createPublicSupabaseClient();
+
+    const { data, error } = await supabase
+      .from('blog_posts')
+      .select('*')
+      .eq('slug', slug)
+      .eq('status', 'published')
+      .maybeSingle();
+
+    if (error || !data) {
+      if (error) console.error('getBlogPost error:', error);
+      return null;
+    }
+
+    return data as BlogPost;
+  } catch (e) {
+    console.error('getBlogPost failed:', e);
+    return null;
+  }
 }
 
 export async function generateMetadata({
@@ -89,10 +105,9 @@ export async function generateMetadata({
   };
 }
 
-// Critical: never crash build/route generation if Supabase errors
 export async function generateStaticParams() {
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = createPublicSupabaseClient();
 
     const { data, error } = await supabase
       .from('blog_posts')
@@ -108,7 +123,7 @@ export async function generateStaticParams() {
 
     return data
       .filter((p) => typeof p.slug === 'string' && p.slug.length > 0)
-      .map((post) => ({ slug: post.slug }));
+      .map((p) => ({ slug: p.slug }));
   } catch (e) {
     console.error('generateStaticParams failed:', e);
     return [];
@@ -131,8 +146,6 @@ export default async function BlogPostPage({
   const post = await getBlogPost(params.slug);
 
   if (!post) notFound();
-
-  // TS: from here down, use `p` so it's guaranteed non-null
   const p = post;
 
   const baseUrl =
