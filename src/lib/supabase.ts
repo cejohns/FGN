@@ -1,83 +1,63 @@
+// src/lib/supabase.ts
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 /**
- * Get env vars safely in BOTH environments:
- * - Vite: import.meta.env.VITE_*
- * - Next: process.env.NEXT_PUBLIC_*
+ * Next.js App Router:
+ * - Only use NEXT_PUBLIC_* here (client-safe)
+ * - Do NOT use dynamic env access (e.g. getEnv(key)) because Next can’t inline it reliably.
+ * - Do NOT use import.meta in Next builds.
  */
-function getEnv(key: string): string | undefined {
-  // Vite environment
-  try {
-    const viteEnv = (import.meta as any)?.env;
-    if (viteEnv && typeof viteEnv[key] === 'string') return viteEnv[key];
-  } catch {
-    // ignore
-  }
 
-  // Next environment (injected at build time)
-  try {
-    const nextEnv = (process as any)?.env;
-    if (nextEnv && typeof nextEnv[key] === 'string') return nextEnv[key];
-  } catch {
-    // ignore
-  }
-
-  return undefined;
-}
-
-// Prefer Vite vars when running Vite, otherwise Next public vars
-const supabaseUrl =
-  getEnv('VITE_SUPABASE_URL') ||
-  getEnv('NEXT_PUBLIC_SUPABASE_URL') ||
-  '';
-
-const supabaseAnonKey =
-  getEnv('VITE_SUPABASE_ANON_KEY') ||
-  getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY') ||
-  '';
-
-// Fail fast so you don’t get weird auth-js lock errors
-if (!supabaseUrl) {
-  throw new Error(
-    'Missing Supabase URL. Set VITE_SUPABASE_URL (Vite) or NEXT_PUBLIC_SUPABASE_URL (Next).'
-  );
-}
-
-if (!supabaseAnonKey) {
-  throw new Error(
-    'Missing Supabase anon key. Set VITE_SUPABASE_ANON_KEY (Vite) or NEXT_PUBLIC_SUPABASE_ANON_KEY (Next).'
-  );
-}
+// These get inlined by Next at build-time when referenced directly.
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 /**
- * Singleton client (prevents multiple auth listeners / locks issues)
+ * Create a browser-safe Supabase client.
+ * Uses a singleton to prevent multiple auth listeners/locks.
  */
 declare global {
   // eslint-disable-next-line no-var
   var __fgn_supabase__: SupabaseClient | undefined;
 }
 
-export const supabase: SupabaseClient =
-  globalThis.__fgn_supabase__ ??
-  createClient(supabaseUrl, supabaseAnonKey, {
+function createBrowserSupabaseClient(): SupabaseClient {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    const msg =
+      'Missing Supabase env vars. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.';
+    // In dev, fail fast so you notice immediately.
+    if (process.env.NODE_ENV !== 'production') {
+      throw new Error(msg);
+    }
+    // In prod, still throw (because the app can’t function), but log first.
+    // If you prefer a “soft fail”, tell me and I’ll give you a safe-null pattern.
+    console.error(msg);
+    throw new Error(msg);
+  }
+
+  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
     },
   });
+}
+
+export const supabase: SupabaseClient =
+  globalThis.__fgn_supabase__ ?? createBrowserSupabaseClient();
 
 if (!globalThis.__fgn_supabase__) {
   globalThis.__fgn_supabase__ = supabase;
 
   // Optional: safe debug message (no secrets)
   if (typeof window !== 'undefined') {
-    console.log('🔌 Supabase client ready:', supabaseUrl);
+    console.log('🔌 Supabase client ready');
   }
 }
 
 /* =========================
-   Types (unchanged)
+   Types (keep as-is)
 ========================= */
 
 export interface NewsArticle {
